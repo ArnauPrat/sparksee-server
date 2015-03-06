@@ -1,5 +1,7 @@
 package com.tinkerpop.gremlin.sparksee.structure;
 
+import com.codahale.metrics.JmxReporter;
+import com.codahale.metrics.MetricRegistry;
 import com.tinkerpop.gremlin.process.computer.GraphComputer;
 import com.tinkerpop.gremlin.process.graph.GraphTraversal;
 import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
@@ -13,11 +15,21 @@ import com.tinkerpop.gremlin.sparksee.process.graph.step.sideEffect.SparkseeGrap
 import com.tinkerpop.gremlin.sparksee.structure.SparkseeFeatures;
 
 import org.apache.commons.configuration.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.lang.management.ManagementFactory;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Iterator;
+
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
 
 /**
  * @author <a href="http://www.sparsity-technologies.com">Sparsity Technologies</a>
@@ -26,7 +38,7 @@ import java.util.Iterator;
 @Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_PERFORMANCE)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
-public class SparkseeGraph implements Graph {
+public class SparkseeGraph implements Graph,SparkseeGraphMBean {
     
     protected static final int INVALID_TYPE = com.sparsity.sparksee.gdb.Type.InvalidType;
     
@@ -41,6 +53,16 @@ public class SparkseeGraph implements Graph {
     private com.sparsity.sparksee.gdb.Database db = null;
     private SparkseeTransaction transaction = null;
     private Configuration configuration;
+    
+    
+   
+    private static final Logger LOG = LoggerFactory.getLogger(SparkseeGraph.class);
+    
+    static{
+    	MetricRegistry registry = new MetricRegistry();
+		JmxReporter reporter = JmxReporter.forRegistry(registry).build();
+		reporter.start();
+    }
     
     private SparkseeGraph(final Configuration configuration) {
         this.configuration = configuration;
@@ -80,19 +102,62 @@ public class SparkseeGraph implements Graph {
      */
     @SuppressWarnings("unchecked")
     public static <G extends Graph> G open(final Configuration configuration) {
+
+    
         if (configuration == null) {
             throw Graph.Exceptions.argumentCanNotBeNull("configuration");
         }
         if (!configuration.containsKey(DB_PARAMETER)) {
             throw new IllegalArgumentException(String.format("Sparksee configuration requires %s to be set", DB_PARAMETER));
         }
+    	LOG.debug("opening "+configuration.getString(DB_PARAMETER));
+        SparkseeGraph graph = new SparkseeGraph(configuration);
         
-        return (G) new SparkseeGraph(configuration);
+        class Multi extends Thread{  
+        	public void run(){  
+        		
+        		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+				try {
+					// Construct the ObjectName for the MBean we will register
+					ObjectName name = new ObjectName("com.tinkerpop.gremlin.sparksee.structure:type=SparkseeGraph");
+
+					// Register the Hello World MBean
+					mbs.registerMBean(graph, name);
+				
+					// Wait forever
+					Thread.sleep(Long.MAX_VALUE);
+				} catch (MalformedObjectNameException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}catch (InstanceAlreadyExistsException
+					| MBeanRegistrationException
+					| NotCompliantMBeanException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        	}
+        }
+        
+        Multi t1=new Multi();  
+        t1.start();  
+        
+        G g = (G) graph;
+        
+        return g;
+    }
+    
+    public void changeDBPath(String path){
+    	
+    	this.close();
     }
 
     public String compute(String algebra) {
       this.tx().readWrite();
       try {
+    	  LOG.debug("new query: "+algebra);
           Integer queryId = ((SparkseeTransaction) this.tx()).newQuery(algebra);
           return "{\"id\":"+queryId.toString()+"}";
       } catch (Exception e) {
