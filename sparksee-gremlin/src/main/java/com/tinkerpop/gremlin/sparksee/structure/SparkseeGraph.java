@@ -1,23 +1,5 @@
 package com.tinkerpop.gremlin.sparksee.structure;
 
-import com.codahale.metrics.JmxReporter;
-import com.codahale.metrics.MetricRegistry;
-import com.tinkerpop.gremlin.process.computer.GraphComputer;
-import com.tinkerpop.gremlin.process.graph.GraphTraversal;
-import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
-import com.tinkerpop.gremlin.structure.Edge;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Transaction;
-import com.tinkerpop.gremlin.structure.Vertex;
-import com.tinkerpop.gremlin.structure.util.ElementHelper;
-import com.tinkerpop.gremlin.structure.util.StringFactory;
-import com.tinkerpop.gremlin.sparksee.process.graph.step.sideEffect.SparkseeGraphStep;
-import com.tinkerpop.gremlin.sparksee.structure.SparkseeFeatures;
-
-import org.apache.commons.configuration.Configuration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.security.InvalidParameterException;
@@ -30,6 +12,25 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
+
+import org.apache.commons.configuration.Configuration;
+import org.apache.log4j.LogManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.codahale.metrics.JmxReporter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.log4j.InstrumentedAppender;
+import com.tinkerpop.gremlin.process.computer.GraphComputer;
+import com.tinkerpop.gremlin.process.graph.GraphTraversal;
+import com.tinkerpop.gremlin.process.graph.util.DefaultGraphTraversal;
+import com.tinkerpop.gremlin.sparksee.process.graph.step.sideEffect.SparkseeGraphStep;
+import com.tinkerpop.gremlin.structure.Edge;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Transaction;
+import com.tinkerpop.gremlin.structure.Vertex;
+import com.tinkerpop.gremlin.structure.util.ElementHelper;
+import com.tinkerpop.gremlin.structure.util.StringFactory;
 
 /**
  * @author <a href="http://www.sparsity-technologies.com">Sparsity Technologies</a>
@@ -60,6 +61,11 @@ public class SparkseeGraph implements Graph,SparkseeGraphMBean {
     
     static{
     	MetricRegistry registry = new MetricRegistry();
+    	InstrumentedAppender appender = new InstrumentedAppender(registry);
+    	appender.activateOptions();
+    	LogManager.getRootLogger().addAppender(appender);
+    	
+    	
 		JmxReporter reporter = JmxReporter.forRegistry(registry).build();
 		reporter.start();
     }

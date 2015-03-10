@@ -442,6 +442,18 @@
                 </exclusions>
             </dependency>
             <dependency>
+                <groupId>com.codahale.metrics</groupId>
+                <artifactId>metrics-log4j</artifactId>
+                <version>${metrics.version}</version>
+                <exclusions>
+                    <!-- conflict with jcl-over-slf4j-->
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
                 <groupId>commons-httpclient</groupId>
                 <artifactId>commons-httpclient</artifactId>
                 <version>3.1</version>

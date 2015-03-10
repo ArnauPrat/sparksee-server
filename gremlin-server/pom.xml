@@ -44,6 +44,10 @@
             <groupId>com.codahale.metrics</groupId>
             <artifactId>metrics-ganglia</artifactId>
         </dependency>
+        <dependency>
+        	<groupId>com.codahale.metrics</groupId>
+        	<artifactId>metrics-log4j</artifactId>
+        </dependency>
         <!-- TESTING -->
         <dependency>
             <groupId>com.tinkerpop</groupId>
