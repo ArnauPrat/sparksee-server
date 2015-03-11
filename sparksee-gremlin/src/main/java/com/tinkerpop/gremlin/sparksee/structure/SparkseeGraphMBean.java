@@ -7,4 +7,8 @@ public interface SparkseeGraphMBean {
 	public String next(Long queryId, Long rows);
 	
 	public String closeQuery(Long queryId);
+	
+	public String getLicense();
+    
+    public String getDatabaseFile();
 }
