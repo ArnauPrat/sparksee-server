@@ -1,10 +1,17 @@
 package com.tinkerpop.gremlin.sparksee.structure;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Properties;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
@@ -18,6 +25,7 @@ import org.apache.log4j.LogManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.codahale.metrics.Counter;
 import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.log4j.InstrumentedAppender;
@@ -55,7 +63,11 @@ public class SparkseeGraph implements Graph,SparkseeGraphMBean {
     private SparkseeTransaction transaction = null;
     private Configuration configuration;
     
+    private final static Counter requestQueries;
+    private final static Counter processedQueries;
     
+    private String licenseCode = null;
+    private String dabaseFile = null;
    
     private static final Logger LOG = LoggerFactory.getLogger(SparkseeGraph.class);
     
@@ -68,6 +80,18 @@ public class SparkseeGraph implements Graph,SparkseeGraphMBean {
     	
 		JmxReporter reporter = JmxReporter.forRegistry(registry).build();
 		reporter.start();
+		
+		requestQueries = registry.counter("request-queries");
+		processedQueries = registry.counter("processed-queries");
+		
+    }
+    
+    public String getLicense(){
+    	return licenseCode;
+    }
+    
+    public String getDatabaseFile(){
+    	return dabaseFile;
     }
     
     private SparkseeGraph(final Configuration configuration) {
@@ -75,6 +99,8 @@ public class SparkseeGraph implements Graph,SparkseeGraphMBean {
 
         final String fileName   = configuration.getString(DB_PARAMETER);
         final String configFile = configuration.getString(CONFIG_DIRECTORY, null);
+        dabaseFile = fileName;
+        
 
         dbFile = new File(fileName);
 
@@ -84,6 +110,19 @@ public class SparkseeGraph implements Graph,SparkseeGraphMBean {
         
         try {
             if (configFile != null) {
+            	
+            	Properties prop = new Properties();
+        		InputStream input = null;
+
+        		input = new FileInputStream(configFile);
+        		prop.load(input);
+        		
+        		licenseCode = prop.getProperty("sparksee.license");
+        			
+        		if (input != null) {
+        			input.close();
+        		}
+
                 com.sparsity.sparksee.gdb.SparkseeProperties.load(configFile);
             }
 
@@ -161,6 +200,7 @@ public class SparkseeGraph implements Graph,SparkseeGraphMBean {
     }
 
     public String compute(String algebra) {
+    	requestQueries.inc();
       this.tx().readWrite();
       try {
     	  LOG.debug("new query: "+algebra);
@@ -178,7 +218,11 @@ public class SparkseeGraph implements Graph,SparkseeGraphMBean {
 
     public String closeQuery(Long queryId) {
         this.tx().readWrite();
-        return ((SparkseeTransaction) this.tx()).closeQuery(queryId.intValue());
+        String closeRequest = ((SparkseeTransaction) this.tx()).closeQuery(queryId.intValue());
+        if(closeRequest.equals("{}")){
+        	processedQueries.inc();
+        }
+        return closeRequest;
     }
     
     @Override
