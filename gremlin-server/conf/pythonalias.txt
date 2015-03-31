@@ -1,0 +1,4 @@
+Database.get_alias = Database.getAlias
+Database.new_session = Database.newSession
+Session.get_graph = Session.getGraph
+Graph.find_type = Graph.findType
