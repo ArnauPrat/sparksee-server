@@ -26,7 +26,7 @@ public class HttpChannelizer extends AbstractChannelizer {
         if (logger.isDebugEnabled())
             pipeline.addLast(new LoggingHandler("http-io", LogLevel.DEBUG));
 
-        pipeline.addLast(new HttpObjectAggregator(1048576));
+        pipeline.addLast(new HttpObjectAggregator(2147483647));
         pipeline.addLast(gremlinGroup, "http-gremlin-handler", new HttpGremlinEndpointHandler(serializers, gremlinExecutor));
     }
 

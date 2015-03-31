@@ -15,6 +15,7 @@ import com.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import com.tinkerpop.gremlin.server.GremlinServer;
 import com.tinkerpop.gremlin.server.util.IteratorUtil;
 import com.tinkerpop.gremlin.server.util.MetricManager;
+
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -25,13 +26,29 @@ import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
+import io.netty.handler.codec.http.multipart.FileUpload;
+import io.netty.handler.codec.http.multipart.HttpDataFactory;
+import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
+import io.netty.handler.codec.http.multipart.HttpPostRequestEncoder;
+import io.netty.handler.codec.http.multipart.HttpPostRequestEncoder.ErrorDataEncoderException;
+import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.util.CharsetUtil;
+
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
+//import org.jboss.netty.handler.codec.http.multipart.InterfaceHttpData;
+/*import org.jboss.netty.handler.codec.http.multipart.Attribute;
+import org.jboss.netty.handler.codec.http.multipart.InterfaceHttpData;
+import org.jboss.netty.handler.codec.http.multipart.InterfaceHttpData.HttpDataType;*/
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -164,28 +181,70 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
             return Triplet.with(script, bindings, language);
         } else {
-            final JsonNode body;
-            try {
-                body = mapper.readTree(request.content().toString(CharsetUtil.UTF_8));
-            } catch (IOException ioe) {
-                throw new IllegalArgumentException("body could not be parsed", ioe);
+        	JsonNode body = null;
+            JsonNode scriptNode = null;
+            String scriptNodeText = null;
+            JsonNode bindingsNode = null;
+            Optional<String> language = null;
+            
+            HttpPostRequestDecoder decoder = new HttpPostRequestDecoder(new DefaultHttpDataFactory(false), request);
+        	if(!decoder.isMultipart()){
+        		try {
+	            	body = mapper.readTree(request.content().toString(CharsetUtil.UTF_8));
+	            	scriptNode = body.get(Tokens.ARGS_GREMLIN);
+	                if (null == scriptNode) throw new IllegalArgumentException("no gremlin script supplied");
+	                scriptNodeText = scriptNode.asText();
+	
+	                bindingsNode = body.get(Tokens.ARGS_BINDINGS);
+	                if (bindingsNode != null && !bindingsNode.isObject()) throw new IllegalArgumentException("bindings must be a Map");
+	                
+	                final JsonNode languageNode = body.get(Tokens.ARGS_LANGUAGE);
+	                language =  null == languageNode ?
+	                        Optional.empty() : Optional.ofNullable(languageNode.asText());
+	                
+	            } catch (IOException ioe) {
+	            	throw new IllegalArgumentException("body could not be parsed", ioe);
+	            }
+        	}
+        	else {
+        		try{
+	        		io.netty.handler.codec.http.multipart.InterfaceHttpData data = decoder.getBodyHttpData(Tokens.ARGS_GREMLIN);
+	        		if (data.getHttpDataType() == io.netty.handler.codec.http.multipart.InterfaceHttpData.HttpDataType.Attribute) {
+	        			scriptNodeText = data.toString().substring(data.getName().length()+1);
+	        		}
+	        		data = decoder.getBodyHttpData(Tokens.ARGS_BINDINGS);
+	        		if (data.getHttpDataType() == io.netty.handler.codec.http.multipart.InterfaceHttpData.HttpDataType.Attribute) {
+	        			bindingsNode = mapper.readTree(data.toString().substring(data.getName().length()+1));
+	        			final Map<String,Object> bindings = new HashMap<>();
+	        			if (bindingsNode != null)
+	        				bindingsNode.fields().forEachRemaining(kv -> bindings.put(kv.getKey(), fromJsonNode(kv.getValue())));
+	        		}
+		            	
+		            List<InterfaceHttpData> filesData = decoder.getBodyHttpDatas();
+		            if(filesData!=null){
+		            	for (InterfaceHttpData dataFile: filesData) {
+		            		if(!dataFile.getName().equals(Tokens.ARGS_GREMLIN) && !dataFile.getName().equals(Tokens.ARGS_BINDINGS)){
+		            			FileUpload fileUpload = (FileUpload) dataFile;
+		            			File file = new File("tmp/"+fileUpload.getFilename());
+		            			if (!file.exists()) {
+		            				file.createNewFile();
+		            			}
+		            			fileUpload.renameTo(file);
+		            		}
+		            	}
+		            }
+		            
+		            language = Optional.empty();
+        		} catch(Exception e){
+            		throw new IllegalArgumentException("body could not be parsed",e);
+            	}
             }
-
-            final JsonNode scriptNode = body.get(Tokens.ARGS_GREMLIN);
-            if (null == scriptNode) throw new IllegalArgumentException("no gremlin script supplied");
-
-            final JsonNode bindingsNode = body.get(Tokens.ARGS_BINDINGS);
-            if (bindingsNode != null && !bindingsNode.isObject()) throw new IllegalArgumentException("bindings must be a Map");
-
+            
             final Map<String,Object> bindings = new HashMap<>();
             if (bindingsNode != null)
                 bindingsNode.fields().forEachRemaining(kv -> bindings.put(kv.getKey(), fromJsonNode(kv.getValue())));
 
-            final JsonNode languageNode = body.get(Tokens.ARGS_LANGUAGE);
-            final Optional<String> language =  null == languageNode ?
-                    Optional.empty() : Optional.ofNullable(languageNode.asText());
-
-            return Triplet.with(scriptNode.asText(), bindings, language);
+            return Triplet.with(scriptNodeText, bindings, language);
         }
     }
 
