@@ -23,7 +23,7 @@
 	<classpathentry kind="lib" path="target/gremlin-server-3.0.0-SNAPSHOT-standalone/lib/gremlin-core-3.0.0-20141202.222412-1336.jar"/>
 	<classpathentry kind="lib" path="target/gremlin-server-3.0.0-SNAPSHOT-standalone/lib/gremlin-driver-3.0.0-20141202.192850-1006.jar"/>
 	<classpathentry kind="lib" path="target/gremlin-server-3.0.0-SNAPSHOT-standalone/lib/gremlin-groovy-3.0.0-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="target/gremlin-server-3.0.0-SNAPSHOT-standalone/lib/gremlin-server-3.0.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="target/gremlin-server-3.0.0-SNAPSHOT-standalone/lib/gremlin-server-3.0.0-SNAPSHOT.jar" sourcepath="src/main/java/com/tinkerpop/gremlin/server/op/standard"/>
 	<classpathentry kind="lib" path="target/gremlin-server-3.0.0-SNAPSHOT-standalone/lib/groovy-all-2.3.7-indy.jar"/>
 	<classpathentry kind="lib" path="target/gremlin-server-3.0.0-SNAPSHOT-standalone/lib/groovy-sandbox-1.6.jar"/>
 	<classpathentry kind="lib" path="target/gremlin-server-3.0.0-SNAPSHOT-standalone/lib/guava-15.0.jar"/>
