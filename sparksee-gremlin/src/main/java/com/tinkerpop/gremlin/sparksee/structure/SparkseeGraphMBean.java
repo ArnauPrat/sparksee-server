@@ -1,8 +1,10 @@
 package com.tinkerpop.gremlin.sparksee.structure;
 
+import java.util.Map;
+
 public interface SparkseeGraphMBean {
 
-	public String compute(String algebra);
+	public String compute(String algebra,Map<String, Object> params);
 	
 	public String next(Long queryId, Long rows);
 	

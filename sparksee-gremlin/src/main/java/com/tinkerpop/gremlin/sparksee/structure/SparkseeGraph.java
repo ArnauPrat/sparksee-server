@@ -11,6 +11,7 @@ import java.lang.management.ManagementFactory;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.management.InstanceAlreadyExistsException;
@@ -19,6 +20,8 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.LogManager;
@@ -53,6 +56,8 @@ public class SparkseeGraph implements Graph,SparkseeGraphMBean {
     
     private static final String DB_PARAMETER     = "gremlin.sparksee.directory";
     private static final String CONFIG_DIRECTORY = "gremlin.sparksee.config";
+    private static final String PYTHON_FROM_IMPORTS = "gremlin.sparksee.pythonfromimports";
+    private static final String PYTHON_ALIAS = "gremlin.sparksee.pythonalias";
     
     /**
      * Database persistent file.
@@ -68,6 +73,7 @@ public class SparkseeGraph implements Graph,SparkseeGraphMBean {
     
     private String licenseCode = null;
     private String dabaseFile = null;
+    private String pythonHeader = "";
    
     private static final Logger LOG = LoggerFactory.getLogger(SparkseeGraph.class);
     
@@ -94,6 +100,10 @@ public class SparkseeGraph implements Graph,SparkseeGraphMBean {
     	return dabaseFile;
     }
     
+    public com.sparsity.sparksee.gdb.Database getRawDatabase() {
+    	return db;
+    }
+     
     private SparkseeGraph(final Configuration configuration) {
         this.configuration = configuration;
 
@@ -135,6 +145,34 @@ public class SparkseeGraph implements Graph,SparkseeGraphMBean {
             transaction = new SparkseeTransaction(this, db);
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
+        }
+        
+        final String pythonFromImportsFile = configuration.getString(PYTHON_FROM_IMPORTS, null);
+        if (pythonFromImportsFile != null) {
+        	
+        	final String pythonAliasFile = configuration.getString(PYTHON_ALIAS, null);
+        	
+        	try {
+        		pythonHeader = "";
+				BufferedReader br = new BufferedReader(new FileReader(pythonFromImportsFile));
+				String line = br.readLine();
+				while(line!=null){
+					pythonHeader = pythonHeader + line +"\n";
+					line = br.readLine();
+				}
+				br.close();
+				
+				br = new BufferedReader(new FileReader(pythonAliasFile));
+				line = br.readLine();
+				while(line!=null){
+					pythonHeader = pythonHeader + line +"\n";
+					line = br.readLine();
+				}
+				br.close();
+				
+        	} catch (Exception e) {
+				throw new RuntimeException(e.getMessage(), e);
+			}
         }
     }
     
@@ -199,13 +237,26 @@ public class SparkseeGraph implements Graph,SparkseeGraphMBean {
     	this.close();
     }
 
-    public String compute(String algebra) {
+    public String compute(String algebra,Map<String, Object> params) {
     	requestQueries.inc();
       this.tx().readWrite();
       try {
     	  LOG.debug("new query: "+algebra);
-          Integer queryId = ((SparkseeTransaction) this.tx()).newQuery(algebra);
-          return "{\"id\":"+queryId.toString()+"}";
+    	  LOG.debug("new query: "+params.toString());
+    	  Object laguageObj = params.get("query-lang");
+    	  if(laguageObj!=null && ((String)laguageObj).equals("python") ){
+    		  ScriptEngine engine = new ScriptEngineManager().getEngineByName("python");
+    		  engine.put("db", getRawDatabase());
+    		  Object codeObj = params.get("query-code");
+    		  if(codeObj!=null){
+    			  engine.eval(pythonHeader+(String)codeObj);
+    		  }
+    		  return "{\"id\":"+0+"}";
+    	  }
+    	  else {
+    		  Integer queryId = ((SparkseeTransaction) this.tx()).newQuery(algebra,params);//, params);
+    		  return "{\"id\":"+queryId.toString()+"}";
+    	  }
       } catch (Exception e) {
           return e.getMessage();
       }
