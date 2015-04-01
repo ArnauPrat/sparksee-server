@@ -1,3 +1,4 @@
 /target/
 /org.eclipse.m2e.core.prefs
 *.project
+/.classpath
