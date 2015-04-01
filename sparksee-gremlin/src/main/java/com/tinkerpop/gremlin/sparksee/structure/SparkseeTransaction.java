@@ -3,6 +3,7 @@ package com.tinkerpop.gremlin.sparksee.structure;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
@@ -46,11 +47,12 @@ public class SparkseeTransaction implements Transaction {
         closeConsumer = CLOSE_BEHAVIOR.COMMIT;
     }
 
-    protected Integer newQuery(String algebra) {
+    protected Integer newQuery(String algebra, Map<String, Object> params) {
     	
         Long threadId = Thread.currentThread().getId();
         com.sparsity.sparksee.gdb.Session sess = db.newSession();
         com.sparsity.sparksee.gdb.Query q = sess.newQuery(); 
+        //q.setDynamic(arg0, arg1); passem parametres query
         com.sparsity.sparksee.gdb.ResultSet rs = q.execute(algebra);
         Integer queryId = queryIdGenerator.incrementAndGet();
         queryMap.put(queryId, q);
