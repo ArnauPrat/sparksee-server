@@ -168,6 +168,7 @@ public class GremlinServer {
             settings = Settings.read(file);
         } catch (Exception ex) {
             logger.error("Configuration file at {} could not be found or parsed properly. [{}]", file, ex.getMessage());
+            ex.printStackTrace();
             return;
         }
 
