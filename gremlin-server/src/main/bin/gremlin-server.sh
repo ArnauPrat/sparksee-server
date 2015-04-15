@@ -36,10 +36,14 @@ if [ "$JAVA_OPTIONS" = "" ] ; then
     JAVA_OPTIONS="-Xms32m -Xmx512m"
 fi
 
+if [ "$GREMLIN_SERVER_HOME" = "" ] ; then
+    $GREMLIN_SERVER_HOME=pwd
+fi
+
 # Execute the application and return its exit code
 if [ "$1" = "-i" ]; then
   shift
-  exec $JAVA -Dlog4j.configuration=conf/log4j-server.properties $JAVA_OPTIONS -cp $CP:$CLASSPATH com.tinkerpop.gremlin.server.util.GremlinServerInstall "$@"
+  exec $JAVA -Dlog4j.configuration=file:$GREMLIN_SERVER_HOME/conf/log4j-server.properties $JAVA_OPTIONS -cp $CP:$CLASSPATH com.tinkerpop.gremlin.server.util.GremlinServerInstall "$@"
 else
-  exec $JAVA -Dlog4j.configuration=conf/log4j-server.properties $JAVA_OPTIONS -cp $CP:$CLASSPATH com.tinkerpop.gremlin.server.GremlinServer "$@"
+  exec $JAVA -Dlog4j.configuration=file:$GREMLIN_SERVER_HOME/conf/log4j-server.properties $JAVA_OPTIONS -cp $CP:$CLASSPATH com.tinkerpop.gremlin.server.GremlinServer "$@"
 fi

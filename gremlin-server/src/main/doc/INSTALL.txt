@@ -1,0 +1,9 @@
+INSTALLATION INSTRUCTIONS
+=================================================
+
+1. Set the GREMLIN_SERVER_HOME environment variable with the place where you have gremlin-server.
+2. Update your PATH environment variable with $GREMLIN_SERVER_HOME/bin directory
+3. Edit the $GREMLIN_SERVER_HOME/conf/gremlin-server-rest-sparksee.yaml, and 
+replace the GREMLIN_SERVER_HOME variable with the absolute path.
+4. Edit the $GREMLIN_SERVER_HOME/conf/sparksee-empty.properties with the absolute path of your sparksee database path.
+5. Restart a shell and run remlin-server.sh $GREMLIN_SERVER_HOME/conf/gremlin-server-rest-sparksee.yaml  

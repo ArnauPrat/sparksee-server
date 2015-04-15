@@ -56,9 +56,6 @@ public class SparkseeGraph implements Graph, SparkseeGraphMBean {
 
 	private static final String DB_PARAMETER = "gremlin.sparksee.directory";
 	private static final String CONFIG_DIRECTORY = "gremlin.sparksee.config";
-	private static final String PYTHON_FROM_IMPORTS = "gremlin.sparksee.pythonfromimports";
-	private static final String PYTHON_ALIAS = "gremlin.sparksee.pythonalias";
-
 	/**
 	 * Database persistent file.
 	 */
@@ -73,11 +70,9 @@ public class SparkseeGraph implements Graph, SparkseeGraphMBean {
 
 	private String licenseCode = null;
 	private String dabaseFile = null;
-	private String pythonHeader = "";
 
 	private static final Logger LOG = LoggerFactory
 			.getLogger(SparkseeGraph.class);
-
 
 	static {
 		MetricRegistry registry = new MetricRegistry();
@@ -90,7 +85,7 @@ public class SparkseeGraph implements Graph, SparkseeGraphMBean {
 
 		requestQueries = registry.counter("request-queries");
 		processedQueries = registry.counter("processed-queries");
-		
+
 	}
 
 	public String getLicense() {
@@ -151,36 +146,6 @@ public class SparkseeGraph implements Graph, SparkseeGraphMBean {
 			throw new RuntimeException(e.getMessage(), e);
 		}
 
-		final String pythonFromImportsFile = configuration.getString(
-				PYTHON_FROM_IMPORTS, null);
-		if (pythonFromImportsFile != null) {
-
-			final String pythonAliasFile = configuration.getString(
-					PYTHON_ALIAS, null);
-
-			try {
-				pythonHeader = "";
-				BufferedReader br = new BufferedReader(new FileReader(
-						pythonFromImportsFile));
-				String line = br.readLine();
-				while (line != null) {
-					pythonHeader = pythonHeader + line + "\n";
-					line = br.readLine();
-				}
-				br.close();
-
-				br = new BufferedReader(new FileReader(pythonAliasFile));
-				line = br.readLine();
-				while (line != null) {
-					pythonHeader = pythonHeader + line + "\n";
-					line = br.readLine();
-				}
-				br.close();
-
-			} catch (Exception e) {
-				throw new RuntimeException(e.getMessage(), e);
-			}
-		}
 	}
 
 	/**
@@ -251,27 +216,14 @@ public class SparkseeGraph implements Graph, SparkseeGraphMBean {
 	public String compute(String algebra, Map<String, Object> params) {
 		requestQueries.inc();
 		this.tx().readWrite();
-		try {
-			LOG.debug("new query: " + algebra);
-			LOG.debug("new query: " + params.toString());
-			Object laguageObj = params.get("query-lang");
-			if (laguageObj != null && ((String) laguageObj).equals("python")) {
-				ScriptEngine engine = new ScriptEngineManager()
-						.getEngineByName("python");
-				engine.put("db", getRawDatabase());
-				Object codeObj = params.get("query-code");
-				if (codeObj != null) {
-					engine.eval(pythonHeader + (String) codeObj);
-				}
-				return "{\"id\":" + 0 + "}";
-			} else {
-				Integer queryId = ((SparkseeTransaction) this.tx()).newQuery(
-						algebra, params);// , params);
-				return "{\"id\":" + queryId.toString() + "}";
-			}
-		} catch (Exception e) {
-			return e.getMessage();
-		}
+
+		LOG.debug("new query: " + algebra);
+		LOG.debug("new query: " + params.toString());
+
+		Integer queryId = ((SparkseeTransaction) this.tx()).newQuery(algebra,
+				params);// , params);
+		return "{\"id\":" + queryId.toString() + "}";
+
 	}
 
 	public void runScript(String script, String locale) throws Exception {
@@ -430,6 +382,11 @@ public class SparkseeGraph implements Graph, SparkseeGraphMBean {
 		transaction.closeAll();
 		db.close();
 		sparksee.close();
+	}
+	
+	public void shutdown(){
+		close();
+		java.lang.System.exit(0);
 	}
 
 	@Override

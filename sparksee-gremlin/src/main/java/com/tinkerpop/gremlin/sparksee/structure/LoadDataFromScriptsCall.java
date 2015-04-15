@@ -3,7 +3,6 @@ package com.tinkerpop.gremlin.sparksee.structure;
 import java.io.File;
 import java.net.URI;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,15 +30,8 @@ public class LoadDataFromScriptsCall implements Callable<Boolean> {
 
 	@Override
 	public Boolean call()  {
-		URI uri = null;
-		LOG.debug("The call is executed");
-		try{
-			uri = new URI("file://"+script);
-		}catch(Exception e){
-			LOG.error("Error runing the script ",e);
-			return true;
-		}
-		File file = new File(uri);
+		
+		File file = new File(script);
 		if (file.exists()) {
 			LOG.debug("The file "+file.getAbsolutePath()+" exists");
 			while (graph.tx().arePendingTransactions()) {

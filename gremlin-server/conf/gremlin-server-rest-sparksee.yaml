@@ -6,7 +6,7 @@ scriptEvaluationTimeout: 30000
 serializedResponseTimeout: 30000
 channelizer: com.tinkerpop.gremlin.server.channel.HttpChannelizer
 graphs: {
-  g: conf/sparksee-empty.properties}
+  g: $GREMLIN_SERVER_HOME/conf/sparksee-empty.properties}
 plugins:
   - tinkerpop.sparksee
 scriptEngines: {
