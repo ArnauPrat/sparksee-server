@@ -28,14 +28,10 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
 import io.netty.handler.codec.http.multipart.FileUpload;
-import io.netty.handler.codec.http.multipart.HttpDataFactory;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
-import io.netty.handler.codec.http.multipart.HttpPostRequestEncoder;
-import io.netty.handler.codec.http.multipart.HttpPostRequestEncoder.ErrorDataEncoderException;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.util.CharsetUtil;
 
-import org.javatuples.Pair;
 import org.javatuples.Triplet;
 //import org.jboss.netty.handler.codec.http.multipart.InterfaceHttpData;
 /*import org.jboss.netty.handler.codec.http.multipart.Attribute;
@@ -45,10 +41,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.channels.FileChannel;
+import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -190,7 +184,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             HttpPostRequestDecoder decoder = new HttpPostRequestDecoder(new DefaultHttpDataFactory(false), request);
         	if(!decoder.isMultipart()){
         		try {
-	            	body = mapper.readTree(request.content().toString(CharsetUtil.UTF_8));
+	            	body = mapper.readTree(URLDecoder.decode(request.content().toString(CharsetUtil.UTF_8), "UTF-8"));
 	            	scriptNode = body.get(Tokens.ARGS_GREMLIN);
 	                if (null == scriptNode) throw new IllegalArgumentException("no gremlin script supplied");
 	                scriptNodeText = scriptNode.asText();
