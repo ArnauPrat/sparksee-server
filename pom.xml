@@ -468,6 +468,16 @@
 					</exclusion>
 				</exclusions>
 			</dependency>
+			<dependency>
+	            <groupId>sqlline</groupId>
+	            <artifactId>sqlline</artifactId>
+	            <version>1.1.10-SNAPSHOT</version>
+	        </dependency>
+	        <dependency>
+	            <groupId>com.sparsity</groupId>
+	            <artifactId>sparksee-jdbc</artifactId>
+	            <version>0.0.1-SNAPSHOT</version>
+	        </dependency>
 		</dependencies>
 	</dependencyManagement>
 
