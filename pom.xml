@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.sonatype.oss</groupId>
@@ -62,6 +61,8 @@
 		<module>gremlin-console</module>
 		<module>gremlin-server</module>
 		<module>sparksee-gremlin</module>
+
+		<module>sparksee-server-tools</module>
 	</modules>
 	<scm>
 		<connection>scm:git:git@github.com:tinkerpop/tinkerpop3.git</connection>
@@ -100,6 +101,7 @@
 			</extension>
 		</extensions>
 		<plugins>
+			
 			<plugin>
 				<artifactId>maven-enforcer-plugin</artifactId>
 				<version>1.3.1</version>
@@ -111,7 +113,7 @@
 						</goals>
 						<configuration>
 							<rules>
-								<DependencyConvergence />
+								<DependencyConvergence/>
 								<requireJavaVersion>
 									<version>[1.8,)</version>
 								</requireJavaVersion>
@@ -185,6 +187,17 @@
 							<hash>${buildNumber}</hash>
 						</manifestEntries>
 					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<finalName>gremlin-server-sparksee-${project.version}</finalName>
+					<descriptors>
+						<descriptor>src/main/assembly/assembly-conf.xml</descriptor>
+					</descriptors>
 				</configuration>
 			</plugin>
 		</plugins>
@@ -357,9 +370,13 @@
 			</plugin>
 		</plugins>
 	</reporting>
+	
+	
 
 	<dependencyManagement>
 		<dependencies>
+			
+			
 			<dependency>
 				<groupId>commons-configuration</groupId>
 				<artifactId>commons-configuration</artifactId>
@@ -468,16 +485,7 @@
 					</exclusion>
 				</exclusions>
 			</dependency>
-			<dependency>
-	            <groupId>sqlline</groupId>
-	            <artifactId>sqlline</artifactId>
-	            <version>1.1.10-SNAPSHOT</version>
-	        </dependency>
-	        <dependency>
-	            <groupId>com.sparsity</groupId>
-	            <artifactId>sparksee-jdbc</artifactId>
-	            <version>0.0.1-SNAPSHOT</version>
-	        </dependency>
+			
 		</dependencies>
 	</dependencyManagement>
 
@@ -889,23 +897,41 @@
 			<id>adapt03</id>
 			<snapshots>
 				<enabled>false</enabled>
+
 			</snapshots>
+
 			<url>http://adapt03.ls.fi.upm.es:8081/artifactory/ext-coherentpaas-release-local</url>
+
 		</repository>
+
 		<repository>
-			<id>adapt03-coherentpaas-snapshots</id>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<url>http://adapt03.ls.fi.upm.es:8081/artifactory/ext-coherentpaas-snapshots-local</url>
-		</repository>
-		<repository>
+
 			<id>adapt03-libs</id>
+
 			<name>libs-release</name>
+
 			<url>http://adapt03.ls.fi.upm.es:8081/artifactory/libs-release-local</url>
+
+		</repository>
+
+		<repository>
+
+			<id>adapt03-coherentpaas-snapshots</id>
+
+			<snapshots>
+
+				<enabled>true</enabled>
+
+			</snapshots>
+
+			<releases>
+
+				<enabled>false</enabled>
+
+			</releases>
+
+			<url>http://adapt03.ls.fi.upm.es:8081/artifactory/ext-coherentpaas-snapshots-local</url>
+
 		</repository>
 	</repositories>
 
