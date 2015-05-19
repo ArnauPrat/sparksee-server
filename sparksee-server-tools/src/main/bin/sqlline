@@ -15,4 +15,4 @@ fi
 
 # Execute the application and return its exit code
 
-exec $JAVA $JAVA_OPTIONS -Djava.ext.dirs=$GREMLIN_SERVER_HOME/lib sqlline.SqlLine "$@"
+exec $JAVA $JAVA_OPTIONS -Djava.ext.dirs=$GREMLIN_SERVER_HOME/tools sqlline.SqlLine "$@"
