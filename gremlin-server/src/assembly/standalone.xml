@@ -1,62 +1,73 @@
-<assembly>
-    <id>standalone</id>
-    <formats>
-        <format>dir</format>
-    </formats>
-    <includeBaseDirectory>false</includeBaseDirectory>
+<assembly
+	xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.3"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.3 http://maven.apache.org/xsd/assembly-1.1.3.xsd">
+	<id>standalone</id>
+	<formats>
+		<format>dir</format>
+	</formats>
+	<includeBaseDirectory>false</includeBaseDirectory>
 
-    <fileSets>
-        <fileSet>
-            <directory>src/main/bin</directory>
-            <outputDirectory>/bin</outputDirectory>
-            <fileMode>0755</fileMode>
-        </fileSet>
-         <fileSet>
-            <directory>../sparksee-server-tools/src/main/bin</directory>
-            <outputDirectory>/bin</outputDirectory>
-            <fileMode>0755</fileMode>
-        </fileSet>
-        <fileSet>
-            <directory>src/main/ext</directory>
-            <outputDirectory>/ext</outputDirectory>
-        </fileSet>
-        <fileSet>
-            <directory>conf</directory>
-            <outputDirectory>/conf</outputDirectory>
-        </fileSet>
-       
-        <fileSet>
-            <directory>doc</directory>
-            <outputDirectory>doc</outputDirectory>
-        </fileSet>
-        <fileSet>
-            <directory>scripts</directory>
-            <outputDirectory>/scripts</outputDirectory>
-        </fileSet>
-        <fileSet>
-            <directory>../target/site/apidocs</directory>
-            <outputDirectory>/javadocs</outputDirectory>
-        </fileSet>
-        <fileSet>
-            <directory>target/*.jar</directory>
-            <outputDirectory>/lib</outputDirectory>
-        </fileSet>
-        <fileSet>
-            <directory>../data</directory>
-            <outputDirectory>/data</outputDirectory>
-        </fileSet>
-    </fileSets>
+	<fileSets>
+		<fileSet>
+			<directory>src/main/bin</directory>
+			<outputDirectory>/bin</outputDirectory>
+			<fileMode>0755</fileMode>
+		</fileSet>
+		<fileSet>
+			<directory>../sparksee-server-tools/src/main/bin</directory>
+			<outputDirectory>/bin</outputDirectory>
+			<fileMode>0755</fileMode>
+		</fileSet>
+		<fileSet>
+			<directory>src/main/ext</directory>
+			<outputDirectory>/ext</outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>conf</directory>
+			<outputDirectory>/conf</outputDirectory>
+		</fileSet>
 
-    <dependencySets>
-        <dependencySet>
-            <outputDirectory>/lib</outputDirectory>
-            <unpack>false</unpack>
-            <scope>compile</scope>
-        </dependencySet>
-        <dependencySet>
-            <outputDirectory>/lib</outputDirectory>
-            <unpack>false</unpack>
-            <scope>provided</scope>
-        </dependencySet>
-    </dependencySets>
+		<fileSet>
+			<directory>doc</directory>
+			<outputDirectory>doc</outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>scripts</directory>
+			<outputDirectory>/scripts</outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>../target/site/apidocs</directory>
+			<outputDirectory>/javadocs</outputDirectory>
+		</fileSet>
+
+		<fileSet>
+			<directory>target/*.jar</directory>
+			<outputDirectory>/lib</outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>../sparksee-server-tools/target/sparksee-cli-standalone/sparksee-cli/lib</directory>
+			<outputDirectory>tools</outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>../data</directory>
+			<outputDirectory>/data</outputDirectory>
+		</fileSet>
+	</fileSets>
+
+	<dependencySets>
+
+		<dependencySet>
+			<outputDirectory>/lib</outputDirectory>
+			<unpack>false</unpack>
+			<scope>compile</scope>
+		</dependencySet>
+		<dependencySet>
+			<outputDirectory>/lib</outputDirectory>
+			<unpack>false</unpack>
+			<scope>provided</scope>
+		</dependencySet>
+
+
+	</dependencySets>
 </assembly>

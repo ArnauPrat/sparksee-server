@@ -10,6 +10,7 @@
             <outputDirectory>bin</outputDirectory>
             <includes>
                 <include>*.sh</include>
+                <include>sqlline</include>
                 <include>*.bat</include>
             </includes>
         </fileSet>
@@ -19,6 +20,10 @@
         <fileSet>
             <directory>target/${project.artifactId}-${project.version}-standalone/data</directory>
             <outputDirectory>data</outputDirectory>
+        </fileSet>
+         <fileSet>
+            <directory>target/${project.artifactId}-${project.version}-standalone/tools</directory>
+            <outputDirectory>tools</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>target/${project.artifactId}-${project.version}-standalone/doc</directory>
