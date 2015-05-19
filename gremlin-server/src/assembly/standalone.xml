@@ -11,6 +11,11 @@
             <outputDirectory>/bin</outputDirectory>
             <fileMode>0755</fileMode>
         </fileSet>
+         <fileSet>
+            <directory>../sparksee-server-tools/src/main/bin</directory>
+            <outputDirectory>/bin</outputDirectory>
+            <fileMode>0755</fileMode>
+        </fileSet>
         <fileSet>
             <directory>src/main/ext</directory>
             <outputDirectory>/ext</outputDirectory>
