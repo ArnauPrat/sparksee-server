@@ -46,7 +46,7 @@
 			<outputDirectory>/lib</outputDirectory>
 		</fileSet>
 		<fileSet>
-			<directory>../sparksee-server-tools/target/sparksee-cli-standalone/sparksee-cli/lib</directory>
+			<directory>../sparksee-server-tools/target/sparksee-cli-tools/sparksee-cli/lib</directory>
 			<outputDirectory>tools</outputDirectory>
 		</fileSet>
 		<fileSet>

@@ -37,7 +37,7 @@
 				<configuration>
 					<finalName>sparksee-cli</finalName>
 					<descriptors>
-						<descriptor>src/main/assembly/assembly-conf.xml</descriptor>
+						<descriptor>src/main/assembly/standalone.xml</descriptor>
 					</descriptors>
 				</configuration>
 				<version>2.4</version>

@@ -6,4 +6,5 @@ INSTALLATION INSTRUCTIONS
 3. Edit the $GREMLIN_SERVER_HOME/conf/gremlin-server-rest-sparksee.yaml, and 
 replace the GREMLIN_SERVER_HOME variable with the absolute path.
 4. Edit the $GREMLIN_SERVER_HOME/conf/sparksee-empty.properties with the absolute path of your sparksee database path.
-5. Restart a shell and run remlin-server.sh $GREMLIN_SERVER_HOME/conf/gremlin-server-rest-sparksee.yaml  
+5. Edit the $GREMLIN_SERVER_HOME/conf/sparksee-empty.properties with the absolute path of your sparksee license path. Ask for a license to: www.sparsity-technologies.com
+6. Restart a shell and run gremlin-server.sh $GREMLIN_SERVER_HOME/conf/gremlin-server-rest-sparksee.yaml  from the directory wherever you want to have the sparksee database.
