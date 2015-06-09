@@ -1,14 +1,14 @@
 package com.tinkerpop.gremlin.sparksee.structure;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.tinkerpop.gremlin.structure.Graph;
 import com.tinkerpop.gremlin.structure.Transaction;
@@ -26,8 +26,11 @@ public class SparkseeTransaction implements Transaction {
 	private ConcurrentHashMap<Long, Metadata> threadData = new ConcurrentHashMap<Long, Metadata>();
 	private ConcurrentHashMap<Integer, com.sparsity.sparksee.gdb.Query> queryMap = new ConcurrentHashMap<Integer, com.sparsity.sparksee.gdb.Query>();
 	private ConcurrentHashMap<Integer, com.sparsity.sparksee.gdb.ResultSet> resultMap = new ConcurrentHashMap<Integer, com.sparsity.sparksee.gdb.ResultSet>();
-	private ConcurrentHashMap<Integer, com.sparsity.sparksee.gdb.Session> querySession = new ConcurrentHashMap<Integer, com.sparsity.sparksee.gdb.Session>();
+	private ConcurrentHashMap<Long, com.sparsity.sparksee.gdb.Session> sessionMap = new ConcurrentHashMap<Long, com.sparsity.sparksee.gdb.Session>();
+	private ConcurrentHashMap<Integer, Long> querySessionMap = new ConcurrentHashMap<Integer, Long>();
 	private AtomicInteger queryIdGenerator = new AtomicInteger(0);
+	private AtomicLong sessionIdGenerator = new AtomicLong(0);
+
 	private ThreadLocal<Boolean> writeMode = new ThreadLocal<Boolean>() {
 		@Override
 		protected Boolean initialValue() {
@@ -48,22 +51,66 @@ public class SparkseeTransaction implements Transaction {
 		closeConsumer = CLOSE_BEHAVIOR.COMMIT;
 	}
 
-	protected Integer newQuery(String algebra, Map<String, Object> params) {
-
-		Long threadId = Thread.currentThread().getId();
+	protected Long begin(Long timestamp) {
 		com.sparsity.sparksee.gdb.Session sess = db.newSession();
+		Long transactionId = sessionIdGenerator.incrementAndGet();
+		sessionMap.put(transactionId, sess);
+		return transactionId;
+	}
+
+	protected String commit(Long transactionId, Long timestamp) {
+		if (!existsSession(transactionId)) {
+			return "{\"error\":\"can not commit an Invalid transaction\"}";
+		 }
+		try {
+		com.sparsity.sparksee.gdb.Session sess = sessionMap.get(transactionId);
+		sess.commit();
+		sess.close();
+		sessionMap.remove(transactionId);
+		return "{}";
+		} catch (Exception e) {
+			return "{\"error\": \"" + e.getMessage()  + "\"}";
+		}
+	}
+
+	protected String rollback(Long transactionId) {
+		try {
+		if (!existsSession(transactionId)) {
+			return "{\"error\":\"can not rollback an Invalid transaction\"}";
+		}
+		com.sparsity.sparksee.gdb.Session sess = sessionMap.get(transactionId);
+		sess.rollback();
+		sess.close();
+		sessionMap.remove(transactionId);
+		return "{}";
+		} catch (Exception e) {
+			return "{\"error\": \"" + e.getMessage()  + "\"}";
+		}
+	}
+
+
+	protected Boolean existsSession(Long transactionId) {
+		return sessionMap.containsKey(transactionId);
+	}
+
+	protected Integer newQuery(Long transactionId, String algebra, Map<String, Object> params) {
+		Long threadId = Thread.currentThread().getId();
+		com.sparsity.sparksee.gdb.Session sess = sessionMap.get(transactionId);
 		com.sparsity.sparksee.gdb.Query q = sess.newQuery();
 		// q.setDynamic(arg0, arg1); passem parametres query
 		com.sparsity.sparksee.gdb.ResultSet rs = q.execute(algebra);
 		Integer queryId = queryIdGenerator.incrementAndGet();
 		queryMap.put(queryId, q);
 		resultMap.put(queryId, rs);
-		querySession.put(queryId, sess);
+		querySessionMap.put(queryId, transactionId);
 		return queryId;
 	}
 
 	protected String next(Integer queryId, Integer rows) {
 		if (queryMap.containsKey(queryId)) {
+			if (!sessionMap.containsKey(querySessionMap.get(queryId))) {
+				return "{\"error\": \"using a query of already closed transaction\"}";
+			}
 			com.sparsity.sparksee.gdb.ResultSet rs = resultMap.get(queryId);
 			String result = rs.getJSON(rows);
 			return result;
@@ -73,12 +120,14 @@ public class SparkseeTransaction implements Transaction {
 
 	protected String closeQuery(Integer queryId) {
 		if (queryMap.containsKey(queryId)) {
+			if (!sessionMap.containsKey(querySessionMap.get(queryId))) {
+				return "{\"error\": \"using a query of already closed transaction\"}";
+			}
 			resultMap.get(queryId).close();
 			resultMap.remove(queryId);
 			queryMap.get(queryId).close();
 			queryMap.remove(queryId);
-			querySession.get(queryId).close();
-			querySession.remove(queryId);
+			querySessionMap.remove(queryId);
 			return "{}";
 		}
 		return "{\"ERROR\":\"Unexisting query\"}";
@@ -124,7 +173,7 @@ public class SparkseeTransaction implements Transaction {
 		for (com.sparsity.sparksee.gdb.Query query : queryMap.values()) {
 			query.close();
 		}
-		for (com.sparsity.sparksee.gdb.Session sess : querySession.values()) {
+		for (com.sparsity.sparksee.gdb.Session sess : sessionMap.values()) {
 			sess.close();
 		}
 

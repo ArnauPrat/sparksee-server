@@ -1,9 +1,7 @@
 package com.tinkerpop.gremlin.sparksee.structure;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.security.InvalidParameterException;
@@ -20,8 +18,6 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.LogManager;
@@ -212,20 +208,6 @@ public class SparkseeGraph implements Graph, SparkseeGraphMBean {
 
 		this.close();
 	}
-
-	public String compute(String algebra, Map<String, Object> params) {
-		requestQueries.inc();
-		this.tx().readWrite();
-
-		LOG.debug("new query: " + algebra);
-		LOG.debug("new query: " + params.toString());
-
-		Integer queryId = ((SparkseeTransaction) this.tx()).newQuery(algebra,
-				params);// , params);
-		return "{\"id\":" + queryId.toString() + "}";
-
-	}
-
 	public void runScript(String script, String locale) throws Exception {
 		ExecutorService pool = Executors.newSingleThreadExecutor();
 		LoadDataFromScriptsCall call = new LoadDataFromScriptsCall(this,
@@ -243,6 +225,57 @@ public class SparkseeGraph implements Graph, SparkseeGraphMBean {
 		}
 		transaction = new SparkseeTransaction(this, db);
 	}
+	
+	public String getWS(Long transactionId){
+		return "{\"id\":" + transactionId.toString() + "}";
+	}
+
+	public String begin(Long timestamp) {
+		Long transactionId = ((SparkseeTransaction) this.tx()).begin(timestamp);
+		return "{\"id\":" + transactionId.toString() + "}";
+	}
+
+	public String commit(Long transactionId, Long timestamp) {
+		String commitRequest = ((SparkseeTransaction) this.tx()).commit(transactionId, timestamp);
+		return commitRequest;
+	}
+
+	public String rollback(Long transactionId) {
+		String rollbackRequest = ((SparkseeTransaction) this.tx()).rollback(transactionId);
+		return rollbackRequest;
+	}
+	
+	public void redoWS(Long commitTimestamp, Long ws) {
+		
+	}
+	
+	public String compute(String algebra, Map<String, Object> params) {
+		requestQueries.inc();
+		long timestamp = java.lang.System.currentTimeMillis();		
+		Long transactionId = ((SparkseeTransaction) this.tx()).begin(timestamp);		
+		Integer queryId = ((SparkseeTransaction) this.tx()).newQuery(transactionId, 
+				algebra, params);
+		timestamp = java.lang.System.currentTimeMillis();
+		((SparkseeTransaction) this.tx()).commit(transactionId, timestamp);
+		return "{\"id\":" + queryId.toString() + "}";
+
+	}
+
+	public String compute(Long transactionId, String algebra, Map<String, Object> params) {
+		requestQueries.inc();
+
+		LOG.debug("new query: " + algebra);
+		LOG.debug("new query: " + params.toString());
+
+		if (!((SparkseeTransaction) this.tx()).existsSession(transactionId)) {
+			return "{\"error\" : \"Invalid transactionid\"}";
+		}
+		Integer queryId = ((SparkseeTransaction) this.tx()).newQuery(transactionId, 
+				algebra, params);
+		return "{\"id\":" + queryId.toString() + "}";
+
+	}
+
 
 	public String next(Long queryId, Long rows) {
 		this.tx().readWrite();

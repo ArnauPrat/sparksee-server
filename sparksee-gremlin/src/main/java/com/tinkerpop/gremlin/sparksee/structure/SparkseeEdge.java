@@ -1,5 +1,9 @@
 package com.tinkerpop.gremlin.sparksee.structure;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import com.sparsity.sparksee.gdb.EdgeData;
 import com.tinkerpop.gremlin.sparksee.process.graph.SparkseeElementTraversal;
 import com.tinkerpop.gremlin.structure.Direction;
@@ -7,10 +11,6 @@ import com.tinkerpop.gremlin.structure.Edge;
 import com.tinkerpop.gremlin.structure.Property;
 import com.tinkerpop.gremlin.structure.Vertex;
 import com.tinkerpop.gremlin.structure.util.StringFactory;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * @author <a href="http://www.sparsity-technologies.com">Sparsity Technologies</a>

@@ -1,7 +1,6 @@
 package com.tinkerpop.gremlin.sparksee.structure;
 
 import java.io.File;
-import java.net.URI;
 import java.util.concurrent.Callable;
 
 import org.slf4j.Logger;

@@ -1,23 +1,23 @@
 package com.tinkerpop.gremlin.sparksee.structure;
 
 
-import com.tinkerpop.gremlin.structure.Element;
-import com.tinkerpop.gremlin.structure.Graph;
-import com.tinkerpop.gremlin.structure.Property;
-import com.tinkerpop.gremlin.structure.util.ElementHelper;
-import com.sparsity.sparksee.gdb.Attribute;
-import com.sparsity.sparksee.gdb.AttributeKind;
-import com.sparsity.sparksee.gdb.AttributeList;
-import com.sparsity.sparksee.gdb.DataType;
-import com.sparsity.sparksee.gdb.TextStream;
-import com.sparsity.sparksee.gdb.Value;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
+
+import com.sparsity.sparksee.gdb.Attribute;
+import com.sparsity.sparksee.gdb.AttributeKind;
+import com.sparsity.sparksee.gdb.AttributeList;
+import com.sparsity.sparksee.gdb.DataType;
+import com.sparsity.sparksee.gdb.TextStream;
+import com.sparsity.sparksee.gdb.Value;
+import com.tinkerpop.gremlin.structure.Element;
+import com.tinkerpop.gremlin.structure.Graph;
+import com.tinkerpop.gremlin.structure.Property;
+import com.tinkerpop.gremlin.structure.util.ElementHelper;
 
 /**
  * @author <a href="http://www.sparsity-technologies.com">Sparsity Technologies</a>
