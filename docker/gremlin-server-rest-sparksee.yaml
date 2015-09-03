@@ -1,4 +1,3 @@
-host: <% ENV['HOSTNAME'] %>
 port: 8182
 threadPoolWorker: 1
 gremlinPool: 8
@@ -6,7 +5,7 @@ scriptEvaluationTimeout: 30000
 serializedResponseTimeout: 30000
 channelizer: com.tinkerpop.gremlin.server.channel.HttpChannelizer
 graphs: {
-  g: <% ENV['GREMLIN_SERVER_HOME'] %>/conf/sparksee-empty.properties}
+  g: /usr/local/sparksee/target/gremlin-server-3.0.0-SNAPSHOT-standalone/conf/sparksee-empty.properties}
 plugins:
   - tinkerpop.sparksee
 scriptEngines: {
