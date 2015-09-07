@@ -33,9 +33,7 @@ echo "copying the standlalone into the working dir"
 
 cp -R /home/root/sparksee/gremlin-server/* /usr/local/sparksee
 
-sed  "1 i host: $HOSTNAME" /home/root/sparksee/docker/gremlin-server-rest-sparksee.yaml
-
-cp /home/root/sparksee/docker/gremlin-server-rest-sparksee.yaml /usr/local/sparksee/target/gremlin-server-3.0.0-SNAPSHOT-standalone/conf/gremlin-server-rest-sparksee.yaml
+sed  "1 i host: $HOSTNAME" /home/root/sparksee/docker/gremlin-server-rest-sparksee.yaml > /usr/local/sparksee/target/gremlin-server-3.0.0-SNAPSHOT-standalone/conf/gremlin-server-rest-sparksee.yaml
 
 cp /home/root/sparksee/docker/sparksee-empty.properties /usr/local/sparksee/target/gremlin-server-3.0.0-SNAPSHOT-standalone/conf/sparksee-empty.properties
 
