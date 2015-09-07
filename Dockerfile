@@ -27,4 +27,10 @@ ENV MVN_USER mvnuser
 
 ENV MVN_PWD mvnpwd
 
+ENV SPARKSEE_CLI_HOME /usr/local/sparksee-cli
+
+ENV GREMLIN_SERVER_HOME /usr/local/sparksee/target/gremlin-server-3.0.0-SNAPSHOT-standalone
+
+ENV PATH $PATH:$GREMLIN_SERVER_HOME/bin:$SPARKSEE_CLI_HOME/bin
+
 CMD ["/home/root/sparksee/docker/start.sh"]

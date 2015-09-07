@@ -72,6 +72,17 @@ public class SparkseeTransaction implements Transaction {
 			return "{\"error\": \"" + e.getMessage()  + "\"}";
 		}
 	}
+	
+	protected String redo(Long transactionId, Long timestamp) {
+		if (!existsSession(transactionId)) {
+			//TODO: db.redoPrecommitted(transactionId)
+			return "{}";
+		 }
+		else{
+			return commit(transactionId, timestamp);
+		}
+		
+	}
 
 	protected String rollback(Long transactionId) {
 		try {

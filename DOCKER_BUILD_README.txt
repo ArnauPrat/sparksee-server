@@ -12,3 +12,8 @@ The MVN_USER and MVN_PWD are your credentials for the Maven private repository f
 The SPARKSEE_LICENSE is the license that Sparsity gives for your database.
 
 "myhostname" represents the name of your server machine that you will use to stablish connection. It can't be localhost.
+
+
+To connect to the server with a shell there is an available command called sqlline to query data using the Sparksee algebra.
+
+docker exec -i -t CONTAINER_ID sqlline

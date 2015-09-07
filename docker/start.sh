@@ -33,6 +33,12 @@ echo "copying the standlalone into the working dir"
 
 cp -R /home/root/sparksee/gremlin-server/* /usr/local/sparksee
 
+mkdir -p /usr/local/sparksee-cli
+
+cp -R /home/root/sparksee/sparksee-server-tools/target/sparksee-cli-tools/sparksee-cli/* /usr/local/sparksee-cli
+
+chmod u+x $SPARKSEE_CLI_HOME/bin/*
+
 sed  "1 i host: $HOSTNAME" /home/root/sparksee/docker/gremlin-server-rest-sparksee.yaml > /usr/local/sparksee/target/gremlin-server-3.0.0-SNAPSHOT-standalone/conf/gremlin-server-rest-sparksee.yaml
 
 cp /home/root/sparksee/docker/sparksee-empty.properties /usr/local/sparksee/target/gremlin-server-3.0.0-SNAPSHOT-standalone/conf/sparksee-empty.properties
@@ -40,10 +46,6 @@ cp /home/root/sparksee/docker/sparksee-empty.properties /usr/local/sparksee/targ
 echo "sparksee.license=$SPARKSEE_LICENSE" > /home/root/sparksee/docker/sparksee.cfg
 
 cp /home/root/sparksee/docker/sparksee.cfg /usr/local/sparksee/target/gremlin-server-3.0.0-SNAPSHOT-standalone/conf/sparksee.cfg
-
-export GREMLIN_SERVER_HOME=/usr/local/sparksee/target/gremlin-server-3.0.0-SNAPSHOT-standalone
-
-export PATH=$PATH:$GREMLIN_SERVER_HOME/bin
 
 cd /usr/local/sparksee/target/gremlin-server-3.0.0-SNAPSHOT-standalone
 
