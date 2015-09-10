@@ -227,7 +227,7 @@ public class SparkseeGraph implements Graph, SparkseeGraphMBean {
 	}
 	
 	public String getWS(Long transactionId){
-		return "{\"id\":" + transactionId.toString() + "}";
+		return ((SparkseeTransaction) this.tx()).getWS(transactionId);
 	}
 
 	public String begin(Long timestamp) {

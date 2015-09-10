@@ -61,50 +61,62 @@ public class SparkseeTransaction implements Transaction {
 	protected String commit(Long transactionId, Long timestamp) {
 		if (!existsSession(transactionId)) {
 			return "{\"error\":\"can not commit an Invalid transaction\"}";
-		 }
+		}
 		try {
-		com.sparsity.sparksee.gdb.Session sess = sessionMap.get(transactionId);
-		sess.commit();
-		sess.close();
-		sessionMap.remove(transactionId);
-		return "{}";
+			com.sparsity.sparksee.gdb.Session sess = sessionMap
+					.get(transactionId);
+			sess.commit();
+			sess.close();
+			sessionMap.remove(transactionId);
+			return "{}";
 		} catch (Exception e) {
-			return "{\"error\": \"" + e.getMessage()  + "\"}";
+			return "{\"error\": \"" + e.getMessage() + "\"}";
 		}
 	}
-	
+
 	protected String redo(Long transactionId, Long timestamp) {
 		if (!existsSession(transactionId)) {
 			db.redoPrecommitted(transactionId);
 			return "{}";
-		 }
-		else{
+		} else {
 			return commit(transactionId, timestamp);
 		}
-		
+
+	}
+
+	public String getWS(Long transactionId) {
+
+		if (existsSession(transactionId)) {
+			com.sparsity.sparksee.gdb.Session sess = sessionMap
+					.get(transactionId);
+			sess.preCommit();
+		}
+
+		return "{\"id\":" + transactionId.toString() + "}";
 	}
 
 	protected String rollback(Long transactionId) {
 		try {
-		if (!existsSession(transactionId)) {
-			return "{\"error\":\"can not rollback an Invalid transaction\"}";
-		}
-		com.sparsity.sparksee.gdb.Session sess = sessionMap.get(transactionId);
-		sess.rollback();
-		sess.close();
-		sessionMap.remove(transactionId);
-		return "{}";
+			if (!existsSession(transactionId)) {
+				return "{\"error\":\"can not rollback an Invalid transaction\"}";
+			}
+			com.sparsity.sparksee.gdb.Session sess = sessionMap
+					.get(transactionId);
+			sess.rollback();
+			sess.close();
+			sessionMap.remove(transactionId);
+			return "{}";
 		} catch (Exception e) {
-			return "{\"error\": \"" + e.getMessage()  + "\"}";
+			return "{\"error\": \"" + e.getMessage() + "\"}";
 		}
 	}
-
 
 	protected Boolean existsSession(Long transactionId) {
 		return sessionMap.containsKey(transactionId);
 	}
 
-	protected Integer newQuery(Long transactionId, String algebra, Map<String, Object> params) {
+	protected Integer newQuery(Long transactionId, String algebra,
+			Map<String, Object> params) {
 		Long threadId = Thread.currentThread().getId();
 		com.sparsity.sparksee.gdb.Session sess = sessionMap.get(transactionId);
 		com.sparsity.sparksee.gdb.Query q = sess.newQuery();
@@ -202,12 +214,11 @@ public class SparkseeTransaction implements Transaction {
 		}
 		threadData.clear();
 	}
-	
-	public boolean arePendingTransactions(){
-		if(!threadData.isEmpty()){
+
+	public boolean arePendingTransactions() {
+		if (!threadData.isEmpty()) {
 			return true;
-		}
-		else{
+		} else {
 			return false;
 		}
 	}
