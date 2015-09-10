@@ -75,7 +75,7 @@ public class SparkseeTransaction implements Transaction {
 	
 	protected String redo(Long transactionId, Long timestamp) {
 		if (!existsSession(transactionId)) {
-			//TODO: db.redoPrecommitted(transactionId)
+			db.redoPrecommitted(transactionId);
 			return "{}";
 		 }
 		else{
