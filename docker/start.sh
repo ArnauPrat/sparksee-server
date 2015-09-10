@@ -27,6 +27,10 @@ echo "</servers></settings>" >> $HOME/.m2/settings.xml
 
 echo "building the project"
 
+cd /home/root/sparksee && mvn clean
+
+cd /home/root/sparksee/sparksee-server-tools && mvn package assembly:assembly
+
 cd /home/root/sparksee && mvn package -DskipTests
 
 echo "copying the standlalone into the working dir"
