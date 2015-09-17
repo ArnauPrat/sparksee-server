@@ -6,14 +6,14 @@ create node 'Person' (
 
 create edge 'Friendships' from 'Person' to 'Person' materialize neighbors
 
-LOAD NODES './rawdata/persons.csv'
+LOAD NODES '/home/root/sparksee/docker/sample/data/persons.csv'
 locale ".utf8"
 COLUMNS 'name'
 INTO Person
 FIELDS TERMINATED '|'
 mode rows
 
-LOAD EDGES './rawdata/friendships.csv'
+LOAD EDGES '/home/root/sparksee/docker/sample/data/friendships.csv'
 COLUMNS src, target
 INTO Friendships
 ignore src, target
