@@ -142,7 +142,7 @@ public class SparkseeTransaction implements Transaction {
 			long timestamp = java.lang.System.currentTimeMillis();//Mike
 			((SparkseeTransaction) this).commit(querySessionMap.get(queryId), timestamp);//Mike
 			querySessionMap.remove(queryId);
-			//sessionMap.remove(queryId);//Mike
+			//sessionMap.remove(queryId);//Mike//
 			return "{}";
 		}
 		return "{\"ERROR\":\"Unexisting query\"}";

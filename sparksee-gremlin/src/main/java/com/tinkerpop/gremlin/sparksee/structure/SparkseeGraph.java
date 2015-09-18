@@ -283,7 +283,7 @@ public class SparkseeGraph implements Graph, SparkseeGraphMBean {
 				rows.intValue());
 	}
 
-	public String closeQuery(Long queryId) {
+	public String closeQuery(Long queryId) {//
 		this.tx().readWrite();
 		String closeRequest = ((SparkseeTransaction) this.tx())
 				.closeQuery(queryId.intValue());
