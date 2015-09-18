@@ -256,7 +256,7 @@ public class SparkseeGraph implements Graph, SparkseeGraphMBean {
 		Integer queryId = ((SparkseeTransaction) this.tx()).newQuery(transactionId, 
 				algebra, params);
 		timestamp = java.lang.System.currentTimeMillis();
-		((SparkseeTransaction) this.tx()).commit(transactionId, timestamp);
+		//((SparkseeTransaction) this.tx()).commit(transactionId, timestamp);Mike
 		return "{\"id\":" + queryId.toString() + "}";
 
 	}
