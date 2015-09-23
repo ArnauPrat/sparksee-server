@@ -17,3 +17,7 @@ The SPARKSEE_LICENSE is the license that Sparsity gives for your database.
 To connect to the server with a shell there is an available command called sqlline to query data using the Sparksee algebra.
 
 docker exec -i -t CONTAINER_ID sqlline
+
+To load a sample of data execute:
+
+docker exec -i -t CONTAINER_ID sparksee-script.sh /home/root/sparksee/docker/schema/db-cdr-schema.ddl
