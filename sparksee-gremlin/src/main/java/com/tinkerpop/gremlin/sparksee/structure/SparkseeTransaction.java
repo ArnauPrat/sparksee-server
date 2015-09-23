@@ -53,6 +53,7 @@ public class SparkseeTransaction implements Transaction {
 
 	protected Long begin(Long timestamp) {
 		com.sparsity.sparksee.gdb.Session sess = db.newSession();
+		sess.begin();// Mike
 		Long transactionId = sessionIdGenerator.incrementAndGet();
 		sessionMap.put(transactionId, sess);
 		return transactionId;
@@ -63,11 +64,12 @@ public class SparkseeTransaction implements Transaction {
 			return "{\"error\":\"can not commit an Invalid transaction\"}";
 		}
 		try {
+
 			com.sparsity.sparksee.gdb.Session sess = sessionMap
 					.get(transactionId);
 			sess.commit();
 			sess.close();
-			sessionMap.remove(transactionId);
+			// sessionMap.remove(transactionId); //Mike
 			return "{}";
 		} catch (Exception e) {
 			return "{\"error\": \"" + e.getMessage() + "\"}";
@@ -150,7 +152,11 @@ public class SparkseeTransaction implements Transaction {
 			resultMap.remove(queryId);
 			queryMap.get(queryId).close();
 			queryMap.remove(queryId);
+			long timestamp = java.lang.System.currentTimeMillis();// Mike
+			((SparkseeTransaction) this).commit(querySessionMap.get(queryId),
+					timestamp);// Mike
 			querySessionMap.remove(queryId);
+			// sessionMap.remove(queryId);//Mike//
 			return "{}";
 		}
 		return "{\"ERROR\":\"Unexisting query\"}";
