@@ -69,7 +69,7 @@ public class SparkseeTransaction implements Transaction {
 					.get(transactionId);
 			sess.commit();
 			sess.close();
-			// sessionMap.remove(transactionId); //Mike
+			sessionMap.remove(transactionId); // Mike
 			return "{}";
 		} catch (Exception e) {
 			return "{\"error\": \"" + e.getMessage() + "\"}";
@@ -91,7 +91,7 @@ public class SparkseeTransaction implements Transaction {
 		if (existsSession(transactionId)) {
 			com.sparsity.sparksee.gdb.Session sess = sessionMap
 					.get(transactionId);
-			sess.preCommit();
+			// sess.preCommit();
 		}
 
 		return "{\"id\":" + transactionId.toString() + "}";
@@ -119,7 +119,7 @@ public class SparkseeTransaction implements Transaction {
 
 	protected Integer newQuery(Long transactionId, String algebra,
 			Map<String, Object> params) {
-		Long threadId = Thread.currentThread().getId();
+
 		com.sparsity.sparksee.gdb.Session sess = sessionMap.get(transactionId);
 		com.sparsity.sparksee.gdb.Query q = sess.newQuery();
 		// q.setDynamic(arg0, arg1); passem parametres query
@@ -145,18 +145,18 @@ public class SparkseeTransaction implements Transaction {
 
 	protected String closeQuery(Integer queryId) {
 		if (queryMap.containsKey(queryId)) {
-			if (!sessionMap.containsKey(querySessionMap.get(queryId))) {
-				return "{\"error\": \"using a query of already closed transaction\"}";
+			if (resultMap.containsKey(queryId)) {
+				//resultMap.get(queryId).close();
+				resultMap.remove(queryId);
 			}
-			resultMap.get(queryId).close();
-			resultMap.remove(queryId);
-			queryMap.get(queryId).close();
+			//queryMap.get(queryId).close();
 			queryMap.remove(queryId);
-			long timestamp = java.lang.System.currentTimeMillis();// Mike
-			((SparkseeTransaction) this).commit(querySessionMap.get(queryId),
-					timestamp);// Mike
+			/*
+			 * long timestamp = java.lang.System.currentTimeMillis();// Mike
+			 * if(querySessionMap.containsKey(queryId)){ ((SparkseeTransaction)
+			 * this).commit(querySessionMap.get(queryId), timestamp);// Mike }
+			 */
 			querySessionMap.remove(queryId);
-			// sessionMap.remove(queryId);//Mike//
 			return "{}";
 		}
 		return "{\"ERROR\":\"Unexisting query\"}";
