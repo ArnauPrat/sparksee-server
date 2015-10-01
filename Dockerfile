@@ -8,7 +8,7 @@ RUN add-apt-repository ppa:webupd8team/java
 RUN echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 boolean true" | debconf-set-selections
 
 RUN apt-get update && \
-    apt-get install -y oracle-java8-installer maven
+    apt-get install -y oracle-java8-installer maven curl
 
 
 # Define commonly used JAVA_HOME variable

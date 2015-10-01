@@ -20,4 +20,4 @@ docker exec -i -t CONTAINER_ID sqlline
 
 To load a sample of data execute:
 
-docker exec -i -t CONTAINER_ID sparksee-script.sh /home/root/sparksee/docker/schema/db-cdr-schema.ddl
+docker exec -i -t CONTAINER_ID sparksee-script.sh /home/root/sparksee/docker/sample/schema/db-cdr-schema.ddl
