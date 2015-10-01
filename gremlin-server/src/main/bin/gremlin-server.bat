@@ -1,13 +1,13 @@
-:: Windows launcher script for Rexster
+:: Windows launcher script for Gremlin Server
 @echo off
 
-cd %CD%\..\target\
+set work=%CD%
 
-set TARGET=
+if [%work:~-3%]==[bin] cd ..
 
-for /f "tokens=*" %%a in ('dir /b /ad') do (
-if exist "%%a\bin\gremlin-server.bat" set TARGET=%%a
-)
+set LIBDIR=lib
 
-cd %TARGET%\bin\
-call gremlin-server.bat %*
+set JAVA_OPTIONS=-Xms32m -Xmx512m
+
+:: Launch the application
+java -Dlog4j.configuration=../conf/log4j-server.properties %JAVA_OPTIONS% %JAVA_ARGS% -cp %LIBDIR%/*; com.tinkerpop.gremlin.server.GremlinServer %*
