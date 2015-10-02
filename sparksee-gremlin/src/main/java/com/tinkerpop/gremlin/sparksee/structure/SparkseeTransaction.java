@@ -91,7 +91,7 @@ public class SparkseeTransaction implements Transaction {
 		if (existsSession(transactionId)) {
 			com.sparsity.sparksee.gdb.Session sess = sessionMap
 					.get(transactionId);
-			// sess.preCommit();
+			 sess.preCommit();
 		}
 
 		return "{\"id\":" + transactionId.toString() + "}";
@@ -146,16 +146,12 @@ public class SparkseeTransaction implements Transaction {
 	protected String closeQuery(Integer queryId) {
 		if (queryMap.containsKey(queryId)) {
 			if (resultMap.containsKey(queryId)) {
-				//resultMap.get(queryId).close();
+				resultMap.get(queryId).close();
 				resultMap.remove(queryId);
 			}
-			//queryMap.get(queryId).close();
+			queryMap.get(queryId).close();
 			queryMap.remove(queryId);
-			/*
-			 * long timestamp = java.lang.System.currentTimeMillis();// Mike
-			 * if(querySessionMap.containsKey(queryId)){ ((SparkseeTransaction)
-			 * this).commit(querySessionMap.get(queryId), timestamp);// Mike }
-			 */
+			
 			querySessionMap.remove(queryId);
 			return "{}";
 		}
