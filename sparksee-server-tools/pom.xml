@@ -26,7 +26,7 @@
 		<dependency>
 			<groupId>com.sparsity</groupId>
 			<artifactId>sparksee-jdbc</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>0.0.1</version>
 		</dependency>
 	</dependencies>
 	<build>
