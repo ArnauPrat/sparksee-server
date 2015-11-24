@@ -277,13 +277,13 @@ public class SparkseeGraph implements Graph, SparkseeGraphMBean {
 
 
 	public String next(Long queryId, Long rows) {
-		this.tx().readWrite();
+		//this.tx().readWrite();
 		return ((SparkseeTransaction) this.tx()).next(queryId.intValue(),
 				rows.intValue());
 	}
 
 	public String closeQuery(Long queryId) {//
-		this.tx().readWrite();
+		//this.tx().readWrite();
 		String closeRequest = ((SparkseeTransaction) this.tx())
 				.closeQuery(queryId.intValue());
 		if (closeRequest.equals("{}")) {

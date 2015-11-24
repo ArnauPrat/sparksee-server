@@ -76,9 +76,9 @@ public class SparkseeTransaction implements Transaction {
 		}
 	}
 
-	protected String redo(Long transactionId, Long timestamp) {
+	protected String redo(Long transactionId, Long timestamp, Long precommitId) {
 		if (!existsSession(transactionId)) {
-			db.redoPrecommitted(transactionId);
+			db.redoPrecommitted(precommitId);
 			return "{}";
 		} else {
 			return commit(transactionId, timestamp);
@@ -88,13 +88,14 @@ public class SparkseeTransaction implements Transaction {
 
 	public String getWS(Long transactionId) {
 
+		Long precommitId = 0L;
 		if (existsSession(transactionId)) {
 			com.sparsity.sparksee.gdb.Session sess = sessionMap
 					.get(transactionId);
-			 sess.preCommit();
+			precommitId = sess.preCommit();
 		}
 
-		return "{\"id\":" + transactionId.toString() + "}";
+		return "{\"id\":" + transactionId.toString() + ", \"precommitId\":" + precommitId +"}";
 	}
 
 	protected String rollback(Long transactionId) {
@@ -254,7 +255,7 @@ public class SparkseeTransaction implements Transaction {
 		metadata.session = db.newSession();
 		threadData.put(threadId, metadata);
 		if (writeMode.get()) {
-			threadData.get(threadId).session.beginUpdate();
+			threadData.get(threadId).session.begin();
 		} else {
 			threadData.get(threadId).session.begin();
 		}
