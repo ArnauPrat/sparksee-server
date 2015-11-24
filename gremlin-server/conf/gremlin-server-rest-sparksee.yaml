@@ -2,11 +2,11 @@ host: localhost
 port: 8182
 threadPoolWorker: 1
 gremlinPool: 8
-scriptEvaluationTimeout: 30000
-serializedResponseTimeout: 30000
+scriptEvaluationTimeout: 300000
+serializedResponseTimeout: 300000
 channelizer: com.tinkerpop.gremlin.server.channel.HttpChannelizer
 graphs: {
-  g: $GREMLIN_SERVER_HOME/conf/sparksee-empty.properties}
+  g: /home/maguila/workspace/gremlin-server-sparksee/gremlin-server/target/gremlin-server-3.0.0-SNAPSHOT-standalone/conf/sparksee-empty.properties}
 plugins:
   - tinkerpop.sparksee
 scriptEngines: {
