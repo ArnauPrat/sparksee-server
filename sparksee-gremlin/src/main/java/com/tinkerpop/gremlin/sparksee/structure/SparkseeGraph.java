@@ -245,8 +245,8 @@ public class SparkseeGraph implements Graph, SparkseeGraphMBean {
 		return rollbackRequest;
 	}
 	
-	public String redoWS(Long commitTimestamp, Long ws) {
-		return ((SparkseeTransaction) this.tx()).redo(ws, commitTimestamp);
+	public String redoWS(Long transactionId, Long timestamp, Long precommitId) {
+		return ((SparkseeTransaction) this.tx()).redo(transactionId,timestamp,precommitId);
 	}
 	
 	public String compute(String algebra, Map<String, Object> params) {
