@@ -251,7 +251,7 @@ public class SparkseeGraph implements Graph, SparkseeGraphMBean {
 	
 	public String garbageCollect(Long timestamp){
 		
-		return "{\"timestamp\":" + timestamp + "}";
+		return ((SparkseeTransaction) this.tx()).garbageCollect(timestamp);
 	}
 	
 	public String compute(String algebra, Map<String, Object> params) {
