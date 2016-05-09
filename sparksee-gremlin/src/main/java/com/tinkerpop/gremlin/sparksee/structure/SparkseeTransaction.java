@@ -1,9 +1,12 @@
 package com.tinkerpop.gremlin.sparksee.structure;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -27,6 +30,8 @@ public class SparkseeTransaction implements Transaction {
 	private ConcurrentHashMap<Integer, com.sparsity.sparksee.gdb.Query> queryMap = new ConcurrentHashMap<Integer, com.sparsity.sparksee.gdb.Query>();
 	private ConcurrentHashMap<Integer, com.sparsity.sparksee.gdb.ResultSet> resultMap = new ConcurrentHashMap<Integer, com.sparsity.sparksee.gdb.ResultSet>();
 	private ConcurrentHashMap<Long, com.sparsity.sparksee.gdb.Session> sessionMap = new ConcurrentHashMap<Long, com.sparsity.sparksee.gdb.Session>();
+	private ConcurrentHashMap<Long, Long> timestampsMap = new ConcurrentHashMap<Long, Long>();
+	
 	private ConcurrentHashMap<Integer, Long> querySessionMap = new ConcurrentHashMap<Integer, Long>();
 	private AtomicInteger queryIdGenerator = new AtomicInteger(0);
 	private AtomicLong sessionIdGenerator = new AtomicLong(0);
@@ -56,6 +61,7 @@ public class SparkseeTransaction implements Transaction {
 		sess.begin();// Mike
 		Long transactionId = sessionIdGenerator.incrementAndGet();
 		sessionMap.put(transactionId, sess);
+		timestampsMap.put(transactionId, timestamp);
 		return transactionId;
 	}
 
@@ -70,6 +76,7 @@ public class SparkseeTransaction implements Transaction {
 			sess.commit();
 			sess.close();
 			sessionMap.remove(transactionId); // Mike
+			timestampsMap.remove(transactionId);
 			return "{}";
 		} catch (Exception e) {
 			return "{\"error\": \"" + e.getMessage() + "\"}";
@@ -108,10 +115,32 @@ public class SparkseeTransaction implements Transaction {
 			sess.rollback();
 			sess.close();
 			sessionMap.remove(transactionId);
+			timestampsMap.remove(transactionId);
 			return "{}";
 		} catch (Exception e) {
 			return "{\"error\": \"" + e.getMessage() + "\"}";
 		}
+	}
+	
+	public String garbageCollect(Long timestamp) {
+		String result = "";
+		Set<Entry<Long, Long>> entries = timestampsMap.entrySet();
+		Iterator<Entry<Long,Long>> it = entries.iterator();
+		Long txId = null;
+		
+		while(it.hasNext() && txId == null){
+			Entry<Long, Long> entry = it.next();
+			if(entry.getValue().equals(timestamp)){
+				txId = entry.getKey();
+			}
+		}
+		if(txId != null){
+			result = "{ \"tx\": \""+txId.toString()+ "\", \"timestamp\": \""+timestamp+"\" }";
+		}
+		else{
+			result = "{ \"timestamp\": \""+timestamp+"\" }";
+		}
+		return result;
 	}
 
 	protected Boolean existsSession(Long transactionId) {

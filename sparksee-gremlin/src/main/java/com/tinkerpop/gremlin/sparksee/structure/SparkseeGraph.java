@@ -249,6 +249,11 @@ public class SparkseeGraph implements Graph, SparkseeGraphMBean {
 		return ((SparkseeTransaction) this.tx()).redo(transactionId,timestamp,precommitId);
 	}
 	
+	public String garbageCollect(Long timestamp){
+		
+		return ((SparkseeTransaction) this.tx()).garbageCollect(timestamp);
+	}
+	
 	public String compute(String algebra, Map<String, Object> params) {
 		requestQueries.inc();
 		long timestamp = java.lang.System.currentTimeMillis();		
