@@ -3,6 +3,8 @@
 
 sed  "1 i host: $HOSTNAME" /home/root/sparksee/docker/gremlin-server-rest-sparksee.yaml > /usr/local/sparksee/target/gremlin-server-3.0.0-SNAPSHOT-standalone/conf/gremlin-server-rest-sparksee.yaml
 
+if [ -n "$XRAYHOST" ]; then sed  "s/REPLACE_XRAY_HOST/${XRAYHOST}/g" /home/root/sparksee/docker/logback.template.groovy > /usr/local/sparksee/target/gremlin-server-3.0.0-SNAPSHOT-standalone/conf/logback.grrovy; fi
+
 cp /home/root/sparksee/docker/sparksee-empty.properties /usr/local/sparksee/target/gremlin-server-3.0.0-SNAPSHOT-standalone/conf/sparksee-empty.properties
 
 echo "sparksee.license=$SPARKSEE_LICENSE" > /home/root/sparksee/docker/sparksee.cfg
