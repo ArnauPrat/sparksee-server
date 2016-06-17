@@ -22,7 +22,6 @@ RUN chmod u+x /home/root/sparksee/docker/start.sh
 
 EXPOSE 8182 
 
-
 ENV MVN_USER sparsity
 
 ENV MVN_PWD sparsity123
