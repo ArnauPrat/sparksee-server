@@ -18,6 +18,7 @@ create node 'Influence' (
 	'ID' string unique
 )
 
+
 create edge 'PUBLISHES' from 'Entity' to 'Document' materialize neighbors
 	
 create edge 'COPIES' from 'Document' to 'Document' materialize neighbors
