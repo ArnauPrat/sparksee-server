@@ -14,7 +14,36 @@
         <dependency>
             <groupId>com.sparsity</groupId>
             <artifactId>sparkseejava</artifactId>
-            <version>5.3.0.105-ATS-SNAPSHOT</version>
+            <version>5.3.0.106-ATS-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>eu.coherentpaas.xray</groupId>
+            <artifactId>xray-core</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>eu.coherentpaas.xray</groupId>
+            <artifactId>xray-graph-appender</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.1.4.cpaas-SNAPSHOT</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>eu.coherentpaas.xray</groupId>
+            <artifactId>xray-config</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <scope>runtime</scope>
+        </dependency>       
+        <dependency>
+            <groupId>eu.coherentpaas.xray</groupId>
+            <artifactId>xray-agent</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>com.tinkerpop</groupId>
@@ -32,11 +61,12 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
+        <!--  
          <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>${slf4j.version}</version>
-        </dependency>
+        </dependency-->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jcl-over-slf4j</artifactId>

@@ -45,3 +45,5 @@ xray("com.tinkerpop.gremlin.sparksee.structure") {
 		//receive("redoWS(Ljava/lang/Long;Ljava/lang/Long;)Ljava/lang/String;", "#0")
 	}
 }
+
+logger("xray", ALL, ["STDOUT", "SOCKET"], false)

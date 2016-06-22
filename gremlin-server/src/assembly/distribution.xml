@@ -51,6 +51,10 @@
             <directory>target/${project.artifactId}-${project.version}-standalone/lib</directory>
             <outputDirectory>lib</outputDirectory>
         </fileSet>
+        <fileSet>
+            <directory>target/agents</directory>
+            <outputDirectory>agents</outputDirectory>
+        </fileSet>
     </fileSets>
     <files>
         <file>

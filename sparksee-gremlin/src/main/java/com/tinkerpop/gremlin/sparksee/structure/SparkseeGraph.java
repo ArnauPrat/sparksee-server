@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
+import java.net.URL;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -99,6 +100,15 @@ public class SparkseeGraph implements Graph, SparkseeGraphMBean {
 	private SparkseeGraph(final Configuration configuration) {
 		this.configuration = configuration;
 
+		URL logback= this.getClass().getClassLoader().getResource("logback.groovy");
+		if(logback == null){
+			java.lang.System.out.println("logback.groovy NOT found");
+		}
+		else{
+			java.lang.System.out.println("logback.groovy found!");
+		}
+		
+		
 		final String fileName = configuration.getString(DB_PARAMETER);
 		final String configFile = configuration.getString(CONFIG_DIRECTORY,
 				null);
