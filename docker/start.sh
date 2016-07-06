@@ -9,6 +9,8 @@ cp /home/root/sparksee/docker/sparksee-empty.properties /usr/local/sparksee/targ
 
 echo "sparksee.license=$SPARKSEE_LICENSE" > /home/root/sparksee/docker/sparksee.cfg
 
+echo "sparksee.io.recovery=true" >> /home/root/sparksee/docker/sparksee.cfg
+
 cp /home/root/sparksee/docker/sparksee.cfg /usr/local/sparksee/target/gremlin-server-3.0.0-SNAPSHOT-standalone/conf/sparksee.cfg
 
 cd /usr/local/sparksee/target/gremlin-server-3.0.0-SNAPSHOT-standalone
