@@ -1,11 +1,17 @@
 package edu.upc.dama.sparksee;
 
-import static spark.Spark.post;
 import static spark.Spark.port;
+import static spark.Spark.post;
+
+import java.io.File;
+import java.io.IOException;
 import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.builder.fluent.Configurations;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -16,8 +22,11 @@ import spark.Response;
 import spark.Route;
 
 public class SparkseeServer {
-	public static void main(String[] args) {
-
+	public static void main(String[] args) throws ConfigurationException, IOException {
+		
+		Configurations configs = new Configurations();
+		Configuration config = configs.properties(new File("src/test/resources/database.properties"));
+		RemoteGraph graph = RemoteGraph.open(config);
 		port(8182);
 		post("/", new Route() {
 
@@ -31,7 +40,7 @@ public class SparkseeServer {
 				Map<?, ?> params = mapper.convertValue(data.get("bindings"), Map.class);
 
 				Binding binding = new Binding(params);
-				binding.setVariable("g", new Graph());
+				binding.setVariable("g", graph);
 				GroovyShell shell = new GroovyShell(binding);
 				Object result = null;
 				Throwable error = null;
