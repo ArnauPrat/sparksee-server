@@ -1,9 +1,0 @@
-LOAD DATA INTO SPARKSEE
-=================================================
-1) Create an Sparksee script to load the data from CSVs. Check http://www.sparsity-technologies.com/UserManual/Scripting.html
-2) Be sure that the csv files to load are in a relative directory to the directory where you have started the gremlin-server.
-3) You must be in the same directory whether you have the sparksee database file (check  $GREMLIN_SERVER_HOME/conf/sparksee-empty.properties).
-4) Then run the command "sparksee-script.sh {your script} .utf8"
-
-
-FYI: You could see an example of script that appears in the doc/examples/db-loader.ddl
