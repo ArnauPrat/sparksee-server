@@ -1,23 +1,19 @@
 package edu.upc.dama.sparksee;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.security.InvalidParameterException;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import org.apache.commons.configuration2.Configuration;
 
 public class RemoteGraph {
 	protected static final int INVALID_TYPE = com.sparsity.sparksee.gdb.Type.InvalidType;
 
-	private static final String DB_PARAMETER = "gremlin.sparksee.directory";
-	private static final String CONFIG_DIRECTORY = "gremlin.sparksee.config";
 	/**
 	 * Database persistent file.
 	 */
@@ -27,13 +23,16 @@ public class RemoteGraph {
 	private RemoteTransaction transaction = null;
 
 	private String licenseCode = null;
-	private String dabaseFile = null;
 
-	public static RemoteGraph open(final Configuration configuration) throws IOException {
-		return new RemoteGraph(configuration);
+	public static RemoteGraph open(Map<String, String> properties, File dbFile) throws IOException {
+		return new RemoteGraph(properties, dbFile);
+	}
+	
+	public File getDbFile(){
+		return dbFile;
 	}
 
-	private RemoteGraph(final Configuration configuration) throws IOException {
+	private RemoteGraph(Map<String, String> properties, File dabaseFile) throws IOException {
 
 		URL logback = this.getClass().getClassLoader().getResource("logback.groovy");
 		if (logback == null) {
@@ -42,33 +41,31 @@ public class RemoteGraph {
 			java.lang.System.out.println("logback.groovy found!");
 		}
 
-		final String fileName = configuration.getString(DB_PARAMETER);
-		final String configFile = configuration.getString(CONFIG_DIRECTORY, null);
-		dabaseFile = fileName;
-
-		dbFile = new File(fileName).getCanonicalFile();
+		dbFile = dabaseFile.getCanonicalFile();
+		licenseCode = properties.get("sparksee.license");
 
 		if (!dbFile.getParentFile().exists() && !dbFile.getParentFile().mkdirs()) {
 			throw new InvalidParameterException(String.format("Unable to create directory %s.", dbFile.getParent()));
 		}
 
 		try {
-			if (configFile != null) {
-
-				Properties prop = new Properties();
-				InputStream input = null;
-
-				input = new FileInputStream(configFile);
-				prop.load(input);
-
-				licenseCode = prop.getProperty("sparksee.license");
-
-				if (input != null) {
-					input.close();
-				}
-
-				com.sparsity.sparksee.gdb.SparkseeProperties.load(configFile);
+			File etc = new File("etc");
+			if(!etc.exists()){
+				etc.mkdirs();
 			}
+			File tmpCfg = new File(etc, "database.properties");
+			FileWriter fw = new FileWriter(tmpCfg);
+			
+			Set<String> keys = properties.keySet();
+			Iterator<String> it = keys.iterator();
+			while(it.hasNext()){
+				String key = it.next();
+				fw.write(key+" = " + properties.get(key)+"\n");
+			}
+			
+			fw.close();
+
+			com.sparsity.sparksee.gdb.SparkseeProperties.load(tmpCfg.getCanonicalPath());
 
 			sparksee = new com.sparsity.sparksee.gdb.Sparksee(new com.sparsity.sparksee.gdb.SparkseeConfig());
 			if (!dbFile.exists()) {
@@ -162,7 +159,13 @@ public class RemoteGraph {
 
 	public void runScript(String script, String locale) throws Exception {
 		ExecutorService pool = Executors.newSingleThreadExecutor();
-		LoadDataFromScriptsCall call = new LoadDataFromScriptsCall(this, script, locale);
+		LoadDataFromScriptsCall call = new LoadDataFromScriptsCall(this, new File(script), locale);
+		pool.submit(call);
+	}
+	
+	public void script(String scriptContent, String locale) throws Exception {
+		ExecutorService pool = Executors.newSingleThreadExecutor();
+		LoadDataFromScriptsCall call = new LoadDataFromScriptsCall(this, scriptContent, locale);
 		pool.submit(call);
 	}
 

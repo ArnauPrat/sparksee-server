@@ -1,142 +1,80 @@
 package edu.upc.dama.sparksee;
 
-import static spark.Spark.port;
-import static spark.Spark.post;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.configuration2.Configuration;
-import org.apache.commons.configuration2.builder.fluent.Configurations;
-import org.apache.commons.configuration2.ex.ConfigurationException;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
 
-import groovy.lang.Binding;
-import groovy.lang.GroovyShell;
-import spark.Request;
-import spark.Response;
-import spark.Route;
+import edu.upc.dama.sparksee.commands.CloseDBCommand;
+import edu.upc.dama.sparksee.commands.Command;
+import edu.upc.dama.sparksee.commands.OpenDBCommand;
+import edu.upc.dama.sparksee.commands.ScriptCommand;
+import edu.upc.dama.sparksee.commands.ShutdownCommand;
+import edu.upc.dama.sparksee.commands.StartCommand;
 
 public class SparkseeServer {
-	public static void main(String[] args) throws ConfigurationException, IOException {
+	@Parameter(names = "--help", help = true)
+	private boolean help;
+
+	private int port = 8182;
+
+	private static SparkseeServer server = null;
+	
+	private RemoteGraph graph;
+
+	public int getPort() {
+		return port;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+	}
+
+	private SparkseeServer() {
+	}
+
+	public static SparkseeServer getInstance() {
+		if (server == null) {
+			server = new SparkseeServer();
+		}
+		return server;
+	}
+	
+	public RemoteGraph getGraph(){
+		return graph;
+	}
+	
+	public void setGraph(RemoteGraph graph){
+		this.graph = graph;
+	}
+
+	public static void main(String[] args) throws Exception {
+
+		Map<String, Command> commands = new HashMap<String, Command>();
+		SparkseeServer server = getInstance();
+		JCommander jc = new JCommander(server);
+
+		StartCommand start = new StartCommand(jc);
+		OpenDBCommand open = new OpenDBCommand(jc);
+		CloseDBCommand close = new CloseDBCommand(jc);
+		ScriptCommand script = new ScriptCommand(jc);
+		ShutdownCommand shutdown = new ShutdownCommand(jc);
 		
-		Configurations configs = new Configurations();
-		Configuration config = configs.properties(new File("src/test/resources/database.properties"));
-		RemoteGraph graph = RemoteGraph.open(config);
-		port(8182);
-		post("/", new Route() {
+		commands.put(start.getName(), start);
+		commands.put(open.getName(), open);
+		commands.put(close.getName(), close);
+		commands.put(script.getName(), script);
+		commands.put(shutdown.getName(), shutdown);
 
-			@Override
-			public Object handle(Request request, Response response) throws Exception {
-				ObjectMapper mapper = new ObjectMapper();
-				String entity = URLDecoder.decode(request.body(), "UTF-8");
-				JsonNode data = mapper.readTree(entity);
-				String code = data.get("gremlin").asText();
-
-				Map<?, ?> params = mapper.convertValue(data.get("bindings"), Map.class);
-
-				Binding binding = new Binding(params);
-				binding.setVariable("g", graph);
-				GroovyShell shell = new GroovyShell(binding);
-				Object result = null;
-				Throwable error = null;
-				try {
-					result = shell.evaluate(code);
-				} catch (Throwable e) {
-					error = e;
-				}
-
-				String json = "";
-				if (error == null) {
-					json = mapper.writeValueAsString(new GraphResponse(result));
-				} else {
-					json = mapper.writeValueAsString(
-							new GraphResponse(
-							"QueryException: " + error.getMessage()));
-				}
-				return json;
-			}
-
-		});
-	}
-
-	public static class GraphResponse {
-
-		private Result result;
-
-		private Map<String, Object> meta = new HashMap<String, Object>();
-
-		private String requestId;
-
-		private Status status;
-
-		public GraphResponse(Object... data) {
-			result = new Result(data);
-			status = new Status();
-			requestId = Long.toString(System.currentTimeMillis());
-		}
-
-		public Result getResult() {
-			return result;
-		}
-
-		public Map<String, Object> getMeta() {
-			return meta;
-		}
-
-		public String getRequestId() {
-			return requestId;
-		}
-
-		public Status getStatus() {
-			return status;
-		}
-
-		public class Result {
-			private Object[] data;
-
-			public Result(Object... data) {
-				this.data = data;
-			}
-
-			public Object[] getData() {
-				return data;
-			}
-		}
-
-		public class Status {
-
-			private String code = "200";
-
-			private Map<String, Object> attributes = new HashMap<String, Object>();
-
-			private String message = "";
-
-			public Status() {
-			}
-
-			public Status(String code, Map<String, Object> attributes, String message) {
-				this.code = code;
-				this.attributes = attributes;
-				this.message = message;
-			}
-
-			public String getCode() {
-				return code;
-			}
-
-			public Map<String, Object> getAttributes() {
-				return attributes;
-			}
-
-			public String getMessage() {
-				return message;
-			}
-
+		jc.parse(args);
+		String command = jc.getParsedCommand();
+		if (server.help || args.length == 0) {
+			jc.usage();
+		} else if (commands.containsKey(command)) {
+			Command selectedCommand = commands.get(command);
+			selectedCommand.execute();
 		}
 	}
+
 }

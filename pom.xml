@@ -25,13 +25,8 @@
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
 			<version>4.1.2</version>
-			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-configuration2</artifactId>
-			<version>2.0</version>
-		</dependency>
+
 		<dependency>
 			<groupId>com.sparsity</groupId>
 			<artifactId>sparkseejava</artifactId>
@@ -75,11 +70,6 @@
 			<version>4.12</version>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>commons-beanutils</groupId>
-			<artifactId>commons-beanutils</artifactId>
-			<version>1.9.2</version>
-		</dependency>
 
 		<dependency>
 			<groupId>eu.coherentpaas</groupId>
@@ -93,15 +83,115 @@
 			<version>0.5-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>sqlline</groupId>
+			<artifactId>sqlline</artifactId>
+			<version>1.1.10-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.sparsity</groupId>
+			<artifactId>sparksee-jdbc</artifactId>
+			<version>0.0.1</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.beust</groupId>
+			<artifactId>jcommander</artifactId>
+			<version>1.48</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.4</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
 			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>2.10</version>
+				<executions>
+					<execution>
+						<phase>validate</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>eu.coherentpaas.xray</groupId>
+									<artifactId>xray-agent</artifactId>
+									<version>0.6.0-SNAPSHOT</version>
+									<classifier>jar-with-dependencies</classifier>
+									<outputDirectory>${project.build.directory}/agents</outputDirectory>
+									<destFileName>xray-agent-with-dependencies.jar</destFileName>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>appassembler-maven-plugin</artifactId>
+				<version>1.6</version>
+				<executions>
+					<execution>
+						<id>assemble-standalone</id>
+						<phase>package</phase>
+						<goals>
+							<goal>assemble</goal>
+						</goals>
+					</execution>
+				</executions>
 				<configuration>
-					<descriptorRefs>
-						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>
+					<configurationSourceDirectory>src/main/resources</configurationSourceDirectory>
+					<includeConfigurationDirectoryInClasspath>true</includeConfigurationDirectoryInClasspath>
+					<copyConfigurationDirectory>true</copyConfigurationDirectory>
+					<programs>
+						<program>
+							<mainClass>edu.upc.dama.sparksee.SparkseeServer</mainClass>
+							<name>sparksee</name>
+							<jvmSettings>
+								<extraArguments>
+									<extraArgument>-Djava.net.preferIPv4Stack=true</extraArgument>
+									<extraArgument>-Dcom.sun.management.jmxremote</extraArgument>
+									<extraArgument>-Dcom.sun.management.jmxremote.ssl=false</extraArgument>
+									<extraArgument>-Dcom.sun.management.jmxremote.authenticate=false</extraArgument>
+									<extraArgument>-server</extraArgument>
+									<extraArgument>-DlogFile=sparksee-server</extraArgument>
+									<extraArgument>-javaagent:agents/xray-agent-with-dependencies.jar</extraArgument>
+								</extraArguments>
+							</jvmSettings>
+							<commandLineArguments>
+								<commandLineArgument>start</commandLineArgument>
+							</commandLineArguments>
+						</program>
+					</programs>
+					<platforms>
+						<platform>windows</platform>
+						<platform>unix</platform>
+					</platforms>
+					<repositoryLayout>flat</repositoryLayout>
+					<repositoryName>lib</repositoryName>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.5.3</version>
+				<executions>
+					<execution>
+						<id>bin</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<descriptor>src/main/assembly/assembly.xml</descriptor>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -111,6 +201,7 @@
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
+					<encoding>UTF-8</encoding>
 				</configuration>
 			</plugin>
 		</plugins>
