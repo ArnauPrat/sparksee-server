@@ -8,9 +8,10 @@ import java.net.URL;
 import java.security.InvalidParameterException;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.commons.configuration2.Configuration;
-
 
 public class RemoteGraph {
 	protected static final int INVALID_TYPE = com.sparsity.sparksee.gdb.Type.InvalidType;
@@ -24,7 +25,7 @@ public class RemoteGraph {
 	private com.sparsity.sparksee.gdb.Sparksee sparksee = null;
 	private com.sparsity.sparksee.gdb.Database db = null;
 	private RemoteTransaction transaction = null;
-	
+
 	private String licenseCode = null;
 	private String dabaseFile = null;
 
@@ -33,7 +34,7 @@ public class RemoteGraph {
 	}
 
 	private RemoteGraph(final Configuration configuration) throws IOException {
-	
+
 		URL logback = this.getClass().getClassLoader().getResource("logback.groovy");
 		if (logback == null) {
 			java.lang.System.out.println("logback.groovy NOT found");
@@ -86,20 +87,18 @@ public class RemoteGraph {
 		if (!((RemoteTransaction) this.tx()).existsSession(transactionId)) {
 			return "{\"error\" : \"Invalid transactionid\"}";
 		}
-		Integer queryId = ((RemoteTransaction) this.tx()).newQuery(transactionId, 
-				algebra, params);
+		Integer queryId = ((RemoteTransaction) this.tx()).newQuery(transactionId, algebra, params);
 		return "{\"id\":" + queryId.toString() + "}";
 	}
 
 	public String compute(String algebra, Map<String, Object> params) {
-		long timestamp = java.lang.System.currentTimeMillis();		
-		Long transactionId = ((RemoteTransaction) this.tx()).begin(timestamp);		
-		Integer queryId = ((RemoteTransaction) this.tx()).newQuery(transactionId, 
-				algebra, params);
+		long timestamp = java.lang.System.currentTimeMillis();
+		Long transactionId = ((RemoteTransaction) this.tx()).begin(timestamp);
+		Integer queryId = ((RemoteTransaction) this.tx()).newQuery(transactionId, algebra, params);
 		timestamp = java.lang.System.currentTimeMillis();
 		return "{\"id\":" + queryId.toString() + "}";
 	}
-	
+
 	public RemoteTransaction tx() {
 		return transaction;
 	}
@@ -123,7 +122,7 @@ public class RemoteGraph {
 	}
 
 	public String redoWS(long transactionId, long commitTimestamp, long precommitId) {
-		return ((RemoteTransaction) this.tx()).redo(transactionId,commitTimestamp,precommitId);
+		return ((RemoteTransaction) this.tx()).redo(transactionId, commitTimestamp, precommitId);
 	}
 
 	public String begin(long timestamp) {
@@ -132,13 +131,39 @@ public class RemoteGraph {
 	}
 
 	public String closeQuery(Long queryId) {
-		String closeRequest = ((RemoteTransaction) this.tx())
-				.closeQuery(queryId.intValue());
+		String closeRequest = ((RemoteTransaction) this.tx()).closeQuery(queryId.intValue());
 		return closeRequest;
 	}
 
 	public String next(Long queryId, Long rows) {
-		return ((RemoteTransaction) this.tx()).next(queryId.intValue(),
-				rows.intValue());
+		return ((RemoteTransaction) this.tx()).next(queryId.intValue(), rows.intValue());
 	}
+
+	public void close() {
+		transaction.closeAll();
+		db.close();
+		sparksee.close();
+	}
+
+	public void shutdown() {
+		close();
+		java.lang.System.exit(0);
+	}
+
+	public void restart() throws Exception {
+		sparksee = new com.sparsity.sparksee.gdb.Sparksee(new com.sparsity.sparksee.gdb.SparkseeConfig());
+		if (!dbFile.exists()) {
+			db = sparksee.create(dbFile.getPath(), dbFile.getName());
+		} else {
+			db = sparksee.open(dbFile.getPath(), false);
+		}
+		transaction = new RemoteTransaction(db);
+	}
+
+	public void runScript(String script, String locale) throws Exception {
+		ExecutorService pool = Executors.newSingleThreadExecutor();
+		LoadDataFromScriptsCall call = new LoadDataFromScriptsCall(this, script, locale);
+		pool.submit(call);
+	}
+
 }
