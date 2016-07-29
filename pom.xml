@@ -30,7 +30,7 @@
 		<dependency>
 			<groupId>com.sparsity</groupId>
 			<artifactId>sparkseejava</artifactId>
-			<version>5.3.0.108-ATS-SNAPSHOT</version>
+			<version>5.3.0.109-ATS-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.coherentpaas.xray</groupId>
