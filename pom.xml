@@ -165,9 +165,9 @@
 									<extraArgument>-javaagent:agents/xray-agent-with-dependencies.jar</extraArgument>
 								</extraArguments>
 							</jvmSettings>
-							<commandLineArguments>
+							<!--<commandLineArguments>
 								<commandLineArgument>start</commandLineArgument>
-							</commandLineArguments>
+							</commandLineArguments>-->
 						</program>
 					</programs>
 					<platforms>
