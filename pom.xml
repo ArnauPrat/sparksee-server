@@ -11,11 +11,11 @@
 			<artifactId>spark-core</artifactId>
 			<version>2.5</version>
 		</dependency>
-		<dependency>
+		<!--  dependency>
 			<groupId>org.codehaus.groovy</groupId>
 			<artifactId>groovy-all</artifactId>
-			<version>2.4.7</version>
-		</dependency>
+			<version>2.4.6</version>
+		</dependency-->
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-mapper-asl</artifactId>
@@ -26,7 +26,11 @@
 			<artifactId>httpclient</artifactId>
 			<version>4.1.2</version>
 		</dependency>
-
+		<dependency>
+			<groupId>org.python</groupId>
+			<artifactId>jython-standalone</artifactId>
+			<version>2.7.0</version>
+		</dependency>
 		<dependency>
 			<groupId>com.sparsity</groupId>
 			<artifactId>sparkseejava</artifactId>
@@ -74,7 +78,7 @@
 		<dependency>
 			<groupId>eu.coherentpaas</groupId>
 			<artifactId>sparksee-wrapper</artifactId>
-			<version>4.3-SNAPSHOT</version>
+			<version>4.2-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -165,9 +169,8 @@
 									<extraArgument>-javaagent:agents/xray-agent-with-dependencies.jar</extraArgument>
 								</extraArguments>
 							</jvmSettings>
-							<!--<commandLineArguments>
-								<commandLineArgument>start</commandLineArgument>
-							</commandLineArguments>-->
+							<!--<commandLineArguments> <commandLineArgument>start</commandLineArgument> 
+								</commandLineArguments> -->
 						</program>
 					</programs>
 					<platforms>

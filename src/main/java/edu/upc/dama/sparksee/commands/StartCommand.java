@@ -5,12 +5,22 @@ import static spark.Spark.post;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.script.Bindings;
+import javax.script.CompiledScript;
+import javax.script.ScriptContext;
+import javax.script.ScriptEngineManager;
+import javax.script.SimpleBindings;
+import javax.script.SimpleScriptContext;
+
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.python.jsr223.PyScriptEngine;
 
 import com.beust.jcommander.DynamicParameter;
 import com.beust.jcommander.JCommander;
@@ -19,15 +29,13 @@ import com.beust.jcommander.Parameters;
 
 import edu.upc.dama.sparksee.RemoteGraph;
 import edu.upc.dama.sparksee.SparkseeServer;
-import groovy.lang.Binding;
-import groovy.lang.GroovyShell;
 import spark.Request;
 import spark.Response;
 import spark.Route;
 
 @Parameters(commandDescription = "Starts the server")
 public class StartCommand implements Command {
-	
+
 	@DynamicParameter(names = "-D", description = "Dynamic configuration parameters go here")
 	private Map<String, String> params = new HashMap<>();
 
@@ -64,6 +72,8 @@ public class StartCommand implements Command {
 			SparkseeServer.getInstance().setPort(port);
 			SparkseeServer.getInstance().setGraph(graph);
 			port(port);
+			URL[] urls = ((URLClassLoader) (Thread.currentThread().getContextClassLoader())).getURLs();
+
 			post("/", new Route() {
 
 				@Override
@@ -73,25 +83,40 @@ public class StartCommand implements Command {
 					JsonNode data = mapper.readTree(entity);
 					String code = data.get("gremlin").asText();
 
-					Map<?, ?> params = mapper.convertValue(data.get("bindings"), Map.class);
-
-					Binding binding = new Binding(params);
-					binding.setVariable("g", graph);
-					GroovyShell shell = new GroovyShell(binding);
+					String json = "";
 					Object result = null;
+					URLClassLoader cloader = new URLClassLoader(urls);
+					ScriptEngineManager manager = new ScriptEngineManager(cloader);
+
+					org.python.jsr223.PyScriptEngine engine = (PyScriptEngine) manager.getEngineByName("python");
+
 					Throwable error = null;
 					try {
-						result = shell.evaluate(code);
+
+						@SuppressWarnings("unchecked")
+						Map<String, ?> params = mapper.convertValue(data.get("bindings"), Map.class);
+
+						CompiledScript cs = engine.compile(code);
+						Bindings binding = new SimpleBindings();
+						binding.putAll(params);
+						binding.put("g", graph);
+						ScriptContext ctx = new SimpleScriptContext();
+						ctx.setBindings(binding, ScriptContext.ENGINE_SCOPE);
+
+						result = cs.eval(ctx);
+
 					} catch (Throwable e) {
 						error = e;
+					} finally {
+						engine.close();
+						cloader.close();
 					}
-
-					String json = "";
 					if (error == null) {
 						json = mapper.writeValueAsString(new GraphResponse(result));
 					} else {
 						json = mapper.writeValueAsString(new GraphResponse("QueryException: " + error.getMessage()));
 					}
+
 					return json;
 				}
 
