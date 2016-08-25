@@ -78,7 +78,7 @@
 		<dependency>
 			<groupId>eu.coherentpaas</groupId>
 			<artifactId>sparksee-wrapper</artifactId>
-			<version>4.2-SNAPSHOT</version>
+			<version>4.3-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

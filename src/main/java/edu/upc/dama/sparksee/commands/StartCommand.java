@@ -74,6 +74,7 @@ public class StartCommand implements Command {
 			port(port);
 			URL[] urls = ((URLClassLoader) (Thread.currentThread().getContextClassLoader())).getURLs();
 
+			
 			post("/", new Route() {
 
 				@Override
@@ -85,14 +86,21 @@ public class StartCommand implements Command {
 
 					String json = "";
 					Object result = null;
+					
+					//long start = System.currentTimeMillis();
+					
 					URLClassLoader cloader = new URLClassLoader(urls);
 					ScriptEngineManager manager = new ScriptEngineManager(cloader);
 
 					org.python.jsr223.PyScriptEngine engine = (PyScriptEngine) manager.getEngineByName("python");
 
+					//long engineTime = System.currentTimeMillis();
+					
+					//System.out.println("engine"+ (engineTime-start));
+					
 					Throwable error = null;
 					try {
-
+						//start = System.currentTimeMillis();
 						@SuppressWarnings("unchecked")
 						Map<String, ?> params = mapper.convertValue(data.get("bindings"), Map.class);
 
@@ -103,9 +111,13 @@ public class StartCommand implements Command {
 						ScriptContext ctx = new SimpleScriptContext();
 						ctx.setBindings(binding, ScriptContext.ENGINE_SCOPE);
 
+						
 						result = cs.eval(ctx);
+						//long end = System.currentTimeMillis();
+						//System.out.println("query: "+ (end-start));
 
 					} catch (Throwable e) {
+						e.printStackTrace();
 						error = e;
 					} finally {
 						engine.close();
@@ -121,6 +133,8 @@ public class StartCommand implements Command {
 				}
 
 			});
+			
+			System.out.println("Sparksee server started. Ready to accept connections on port: "+port);
 		}
 	}
 
