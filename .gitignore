@@ -6,3 +6,4 @@ target/
 /.classpath
 /target/
 /sparksee.log
+/bin/
