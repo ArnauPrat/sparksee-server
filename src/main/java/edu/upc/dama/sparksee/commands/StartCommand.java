@@ -5,22 +5,17 @@ import static spark.Spark.post;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.script.Bindings;
-import javax.script.CompiledScript;
-import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.SimpleBindings;
-import javax.script.SimpleScriptContext;
 
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.python.jsr223.PyScriptEngine;
 
 import com.beust.jcommander.DynamicParameter;
 import com.beust.jcommander.JCommander;
@@ -72,8 +67,8 @@ public class StartCommand implements Command {
 			SparkseeServer.getInstance().setPort(port);
 			SparkseeServer.getInstance().setGraph(graph);
 			port(port);
-			URL[] urls = ((URLClassLoader) (Thread.currentThread().getContextClassLoader())).getURLs();
-
+			ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
+			
 			
 			post("/", new Route() {
 
@@ -87,42 +82,25 @@ public class StartCommand implements Command {
 					String json = "";
 					Object result = null;
 					
-					//long start = System.currentTimeMillis();
 					
-					URLClassLoader cloader = new URLClassLoader(urls);
-					ScriptEngineManager manager = new ScriptEngineManager(cloader);
-
-					org.python.jsr223.PyScriptEngine engine = (PyScriptEngine) manager.getEngineByName("python");
-
-					//long engineTime = System.currentTimeMillis();
-					
-					//System.out.println("engine"+ (engineTime-start));
 					
 					Throwable error = null;
 					try {
 						//start = System.currentTimeMillis();
 						@SuppressWarnings("unchecked")
 						Map<String, ?> params = mapper.convertValue(data.get("bindings"), Map.class);
-
-						CompiledScript cs = engine.compile(code);
+						
 						Bindings binding = new SimpleBindings();
 						binding.putAll(params);
 						binding.put("g", graph);
-						ScriptContext ctx = new SimpleScriptContext();
-						ctx.setBindings(binding, ScriptContext.ENGINE_SCOPE);
-
 						
-						result = cs.eval(ctx);
-						//long end = System.currentTimeMillis();
-						//System.out.println("query: "+ (end-start));
-
+						
+						result =engine.eval(code, binding);
+					
 					} catch (Throwable e) {
 						e.printStackTrace();
 						error = e;
-					} finally {
-						engine.close();
-						cloader.close();
-					}
+					} 
 					if (error == null) {
 						json = mapper.writeValueAsString(new GraphResponse(result));
 					} else {
