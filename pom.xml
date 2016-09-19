@@ -92,7 +92,7 @@
 			<groupId>com.sparsity</groupId>
 			<artifactId>sparksee-jdbc</artifactId>
 			<version>0.0.1</version>
-			<scope>runtime</scope>
+			
 		</dependency>
 		<dependency>
 			<groupId>com.beust</groupId>
