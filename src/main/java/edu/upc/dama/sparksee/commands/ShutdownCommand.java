@@ -9,15 +9,24 @@ import com.beust.jcommander.Parameters;
 import edu.upc.dama.sparksee.RemoteGraph;
 import edu.upc.dama.sparksee.SparkseeServer;
 
+import java.util.HashMap;
+
 @Parameters(commandDescription = "Shutdown the server that has started in that machine")
 public class ShutdownCommand implements Command {
 
 	@Parameter(names = "--help", help = true)
 	private boolean help;
 
+    @Parameter(names = "-host", required = false, description = "host")
+    private String host = "localhost";
+
+    @Parameter(names = "-port", required = false, description = "port")
+    private int port = SparkseeServer.getInstance().getPort();
+
 	private JCommander jc;
 
 	private String name = "shutdown";
+
 
 	public ShutdownCommand(JCommander jc) {
 		jc.addCommand(name, this);
@@ -29,11 +38,7 @@ public class ShutdownCommand implements Command {
 		if (help) {
 			jc.usage(getName());
 		} else {
-			RemoteGraph graph = SparkseeServer.getInstance().getGraph();
-			if(graph != null){
-				graph.close();
-				stop();
-			}
+            SparkseeClient.request(host, port, "g.shutdown()", new HashMap<String, Object>());
 		}
 	}
 

@@ -27,6 +27,7 @@ import edu.upc.dama.sparksee.SparkseeServer;
 import spark.Request;
 import spark.Response;
 import spark.Route;
+import spark.Spark;
 
 @Parameters(commandDescription = "Starts the server")
 public class StartCommand implements Command {
@@ -56,11 +57,10 @@ public class StartCommand implements Command {
 		if (help) {
 			jc.usage(getName());
 		} else {
-
 			if (params == null || params.isEmpty()) {
 				params = new HashMap<String, String>();
-				params.put("sparksee.license", "V8CW9-XCDE6-A7YGA-K43PC");
-				params.put("sparksee.io.recovery", "true");
+				//params.put("sparksee.license", "V8CW9-XCDE6-A7YGA-K43PC");
+				//params.put("sparksee.io.recovery", "true");
 			}
 			RemoteGraph graph = RemoteGraph.open(params,
 					new File("dbs" + File.separator + database).getCanonicalFile());
@@ -68,8 +68,7 @@ public class StartCommand implements Command {
 			SparkseeServer.getInstance().setGraph(graph);
 			port(port);
 			ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
-			
-			
+
 			post("/", new Route() {
 
 				@Override
@@ -81,26 +80,41 @@ public class StartCommand implements Command {
 
 					String json = "";
 					Object result = null;
-					
-					
-					
+
 					Throwable error = null;
 					try {
 						//start = System.currentTimeMillis();
 						@SuppressWarnings("unchecked")
 						Map<String, ?> params = mapper.convertValue(data.get("bindings"), Map.class);
-						
+
 						Bindings binding = new SimpleBindings();
 						binding.putAll(params);
 						binding.put("g", graph);
-						
-						
-						result =engine.eval(code, binding);
-					
+
+						result = engine.eval(code, binding);
+
+						if(code.contains("shutdown")) {
+						    new Thread(new Runnable() {
+						        public void run() {
+						            System.out.println("Server will shutdown in ... ");
+						            for( int i = 5; i > 0; i--) {
+						                System.out.println(i+" ");
+						                try {
+                                            Thread.sleep(1000);
+                                        } catch (Exception e) {
+						                    e.printStackTrace();
+                                        }
+                                    }
+                                    System.out.println("... Shutting down");
+                                    Spark.stop();
+                                }
+                            }).start();
+                        }
+
 					} catch (Throwable e) {
 						e.printStackTrace();
 						error = e;
-					} 
+					}
 					if (error == null) {
 						json = mapper.writeValueAsString(new GraphResponse(result));
 					} else {
@@ -111,7 +125,7 @@ public class StartCommand implements Command {
 				}
 
 			});
-			
+
 			System.out.println("Sparksee server started. Ready to accept connections on port: "+port);
 		}
 	}

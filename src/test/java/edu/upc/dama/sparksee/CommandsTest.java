@@ -7,10 +7,9 @@ public class CommandsTest {
 	@Test
 	public void testShutdown() throws Exception{
 		SparkseeServer.main(new String[]{"start"});
-		
 		Thread.sleep(1000);
-		
 		SparkseeServer.main(new String[]{"shutdown"});
+		Thread.sleep(7000);
 	}
 	
 	@Test
@@ -22,6 +21,7 @@ public class CommandsTest {
 		SparkseeServer.main(new String[]{"close"});
 		
 		SparkseeServer.main(new String[]{"shutdown"});
+		Thread.sleep(7000);
 	}
 	
 	@Test
@@ -34,5 +34,6 @@ public class CommandsTest {
 		Thread.sleep(5000);
 		
 		SparkseeServer.main(new String[]{"shutdown"});
+		Thread.sleep(7000);
 	}
 }

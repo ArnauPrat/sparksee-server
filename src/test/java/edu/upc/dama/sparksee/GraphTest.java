@@ -23,8 +23,6 @@ public class GraphTest {
 		}
 
 		HashMap<String, String> params = new HashMap<String, String>();
-		params.put("sparksee.license", "V8CW9-XCDE6-A7YGA-K43PC");
-		params.put("sparksee.io.recovery", "true");
 		RemoteGraph graph = RemoteGraph.open(params, new File("graph.gdb").getCanonicalFile());
 		try {
 			Assert.assertNotNull(graph);

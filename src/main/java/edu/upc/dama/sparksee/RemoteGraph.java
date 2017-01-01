@@ -1,5 +1,7 @@
 package edu.upc.dama.sparksee;
 
+import spark.Spark;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -22,8 +24,6 @@ public class RemoteGraph {
 	private com.sparsity.sparksee.gdb.Database db = null;
 	private RemoteTransaction transaction = null;
 
-	private String licenseCode = null;
-
 	public static RemoteGraph open(Map<String, String> properties, File dbFile) throws IOException {
 		return new RemoteGraph(properties, dbFile);
 	}
@@ -42,7 +42,6 @@ public class RemoteGraph {
 		}
 
 		dbFile = dabaseFile.getCanonicalFile();
-		licenseCode = properties.get("sparksee.license");
 
 		if (!dbFile.getParentFile().exists() && !dbFile.getParentFile().mkdirs()) {
 			throw new InvalidParameterException(String.format("Unable to create directory %s.", dbFile.getParent()));
@@ -144,7 +143,6 @@ public class RemoteGraph {
 
 	public void shutdown() {
 		close();
-		java.lang.System.exit(0);
 	}
 
 	public void restart() throws Exception {

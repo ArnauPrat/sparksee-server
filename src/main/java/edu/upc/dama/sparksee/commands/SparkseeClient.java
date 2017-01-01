@@ -6,11 +6,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.impl.client.HttpClients;
 
 public class SparkseeClient {
 
@@ -20,7 +23,7 @@ public class SparkseeClient {
 		Map<String, Object> result = new HashMap<String, Object>();
 		result.put("gremlin", command);
 
-		DefaultHttpClient httpclient = new DefaultHttpClient();
+		CloseableHttpClient httpclient = HttpClients.createDefault();
 
 		HttpPost httppost = new HttpPost("http://" + host + ":" + port);
 
@@ -34,7 +37,7 @@ public class SparkseeClient {
 
 		httppost.setEntity(entity);
 
-		return httpclient.execute(httppost);
+        return httpclient.execute(httppost);
 	}
 
 }
