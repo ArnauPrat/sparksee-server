@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# Find Java
+if [ "$JAVA_HOME" = "" ] ; then
+    JAVA="java"
+else
+    JAVA="$JAVA_HOME/bin/java"
+fi
+
+# Set Java options
+if [ "$JAVA_OPTIONS" = "" ] ; then
+    JAVA_OPTIONS="-Xms32m -Xmx512m"
+fi
+
+
+# Execute the application and return its exit code
+
+exec $JAVA $JAVA_OPTIONS -Djava.ext.dirs=lib:ext sqlline.SqlLine "$@"

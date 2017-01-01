@@ -1,22 +1,21 @@
 package edu.upc.dama.sparksee;
 
+import spark.Spark;
+
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.security.InvalidParameterException;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.Properties;
-
-import org.apache.commons.configuration2.Configuration;
-
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class RemoteGraph {
 	protected static final int INVALID_TYPE = com.sparsity.sparksee.gdb.Type.InvalidType;
 
-	private static final String DB_PARAMETER = "gremlin.sparksee.directory";
-	private static final String CONFIG_DIRECTORY = "gremlin.sparksee.config";
 	/**
 	 * Database persistent file.
 	 */
@@ -24,16 +23,17 @@ public class RemoteGraph {
 	private com.sparsity.sparksee.gdb.Sparksee sparksee = null;
 	private com.sparsity.sparksee.gdb.Database db = null;
 	private RemoteTransaction transaction = null;
-	
-	private String licenseCode = null;
-	private String dabaseFile = null;
 
-	public static RemoteGraph open(final Configuration configuration) throws IOException {
-		return new RemoteGraph(configuration);
+	public static RemoteGraph open(Map<String, String> properties, File dbFile) throws IOException {
+		return new RemoteGraph(properties, dbFile);
+	}
+	
+	public File getDbFile(){
+		return dbFile;
 	}
 
-	private RemoteGraph(final Configuration configuration) throws IOException {
-	
+	private RemoteGraph(Map<String, String> properties, File dabaseFile) throws IOException {
+
 		URL logback = this.getClass().getClassLoader().getResource("logback.groovy");
 		if (logback == null) {
 			java.lang.System.out.println("logback.groovy NOT found");
@@ -41,33 +41,30 @@ public class RemoteGraph {
 			java.lang.System.out.println("logback.groovy found!");
 		}
 
-		final String fileName = configuration.getString(DB_PARAMETER);
-		final String configFile = configuration.getString(CONFIG_DIRECTORY, null);
-		dabaseFile = fileName;
-
-		dbFile = new File(fileName).getCanonicalFile();
+		dbFile = dabaseFile.getCanonicalFile();
 
 		if (!dbFile.getParentFile().exists() && !dbFile.getParentFile().mkdirs()) {
 			throw new InvalidParameterException(String.format("Unable to create directory %s.", dbFile.getParent()));
 		}
 
 		try {
-			if (configFile != null) {
-
-				Properties prop = new Properties();
-				InputStream input = null;
-
-				input = new FileInputStream(configFile);
-				prop.load(input);
-
-				licenseCode = prop.getProperty("sparksee.license");
-
-				if (input != null) {
-					input.close();
-				}
-
-				com.sparsity.sparksee.gdb.SparkseeProperties.load(configFile);
+			File etc = new File("etc");
+			if(!etc.exists()){
+				etc.mkdirs();
 			}
+			File tmpCfg = new File(etc, "database.properties");
+			FileWriter fw = new FileWriter(tmpCfg);
+			
+			Set<String> keys = properties.keySet();
+			Iterator<String> it = keys.iterator();
+			while(it.hasNext()){
+				String key = it.next();
+				fw.write(key+" = " + properties.get(key)+"\n");
+			}
+			
+			fw.close();
+
+			com.sparsity.sparksee.gdb.SparkseeProperties.load(tmpCfg.getCanonicalPath());
 
 			sparksee = new com.sparsity.sparksee.gdb.Sparksee(new com.sparsity.sparksee.gdb.SparkseeConfig());
 			if (!dbFile.exists()) {
@@ -86,20 +83,18 @@ public class RemoteGraph {
 		if (!((RemoteTransaction) this.tx()).existsSession(transactionId)) {
 			return "{\"error\" : \"Invalid transactionid\"}";
 		}
-		Integer queryId = ((RemoteTransaction) this.tx()).newQuery(transactionId, 
-				algebra, params);
+		Integer queryId = ((RemoteTransaction) this.tx()).newQuery(transactionId, algebra, params);
 		return "{\"id\":" + queryId.toString() + "}";
 	}
 
 	public String compute(String algebra, Map<String, Object> params) {
-		long timestamp = java.lang.System.currentTimeMillis();		
-		Long transactionId = ((RemoteTransaction) this.tx()).begin(timestamp);		
-		Integer queryId = ((RemoteTransaction) this.tx()).newQuery(transactionId, 
-				algebra, params);
+		long timestamp = java.lang.System.currentTimeMillis();
+		Long transactionId = ((RemoteTransaction) this.tx()).begin(timestamp);
+		Integer queryId = ((RemoteTransaction) this.tx()).newQuery(transactionId, algebra, params);
 		timestamp = java.lang.System.currentTimeMillis();
 		return "{\"id\":" + queryId.toString() + "}";
 	}
-	
+
 	public RemoteTransaction tx() {
 		return transaction;
 	}
@@ -123,7 +118,7 @@ public class RemoteGraph {
 	}
 
 	public String redoWS(long transactionId, long commitTimestamp, long precommitId) {
-		return ((RemoteTransaction) this.tx()).redo(transactionId,commitTimestamp,precommitId);
+		return ((RemoteTransaction) this.tx()).redo(transactionId, commitTimestamp, precommitId);
 	}
 
 	public String begin(long timestamp) {
@@ -132,13 +127,43 @@ public class RemoteGraph {
 	}
 
 	public String closeQuery(Long queryId) {
-		String closeRequest = ((RemoteTransaction) this.tx())
-				.closeQuery(queryId.intValue());
+		String closeRequest = ((RemoteTransaction) this.tx()).closeQuery(queryId.intValue());
 		return closeRequest;
 	}
 
 	public String next(Long queryId, Long rows) {
-		return ((RemoteTransaction) this.tx()).next(queryId.intValue(),
-				rows.intValue());
+		return ((RemoteTransaction) this.tx()).next(queryId.intValue(), rows.intValue());
+	}
+
+	public void close() {
+		transaction.closeAll();
+		db.close();
+		sparksee.close();
+	}
+
+	public void shutdown() {
+		close();
+	}
+
+	public void restart() throws Exception {
+		sparksee = new com.sparsity.sparksee.gdb.Sparksee(new com.sparsity.sparksee.gdb.SparkseeConfig());
+		if (!dbFile.exists()) {
+			db = sparksee.create(dbFile.getPath(), dbFile.getName());
+		} else {
+			db = sparksee.open(dbFile.getPath(), false);
+		}
+		transaction = new RemoteTransaction(db);
+	}
+
+	public void runScript(String script, String locale) throws Exception {
+		ExecutorService pool = Executors.newSingleThreadExecutor();
+		LoadDataFromScriptsCall call = new LoadDataFromScriptsCall(this, new File(script), locale);
+		pool.submit(call);
+	}
+	
+	public void script(String scriptContent, String locale) throws Exception {
+		ExecutorService pool = Executors.newSingleThreadExecutor();
+		LoadDataFromScriptsCall call = new LoadDataFromScriptsCall(this, scriptContent, locale);
+		pool.submit(call);
 	}
 }

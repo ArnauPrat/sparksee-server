@@ -2,8 +2,6 @@ package edu.upc.dama.sparksee;
 
 import java.util.Properties;
 
-import eu.coherentpaas.wrapper.Graph;
-
 public class Client {
 
 	// http://localhost:4567/hello
@@ -37,10 +35,11 @@ public class Client {
 						Properties properties = new Properties();
 						properties.put("sparksee.host", "localhost");
 						properties.put("sparksee.port", "8182");
-						Graph graph = new Graph(properties);
+						/*Graph graph = new Graph(properties);
 						graph.begin();
 						graph.compute("GRAPH::TYPES");
 						graph.applyWS();
+						*/
 
 					} catch (Exception e) {
 						e.printStackTrace();

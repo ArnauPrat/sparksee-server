@@ -1,0 +1,9 @@
+.DS_Store
+.project
+.settings/
+docker/.DS_Store
+target/
+/.classpath
+/target/
+/sparksee.log
+/bin/
