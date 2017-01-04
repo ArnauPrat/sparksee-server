@@ -94,6 +94,8 @@ public class StartCommand implements Command {
 						result = engine.eval(code, binding);
 
 						if(code.contains("shutdown")) {
+
+							// Spawns the thread that will shoutdown the Spark server
 						    new Thread(new Runnable() {
 						        public void run() {
 						            System.out.println("Server will shutdown in ... ");

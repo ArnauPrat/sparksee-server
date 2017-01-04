@@ -155,15 +155,26 @@ public class RemoteGraph {
 		transaction = new RemoteTransaction(db);
 	}
 
-	public void runScript(String script, String locale) throws Exception {
+	public void use(String fileName) throws Exception {
+		dbFile = new File(fileName);
+		if(dbFile.exists()) {
+			if(!db.isClosed()) {
+				db.close();
+			}
+			db = sparksee.open(dbFile.getPath(),false);
+			transaction = new RemoteTransaction(db);
+		}
+	}
+
+	public void runScript(String script, String locale, Map<String,String> variables) throws Exception {
 		ExecutorService pool = Executors.newSingleThreadExecutor();
-		LoadDataFromScriptsCall call = new LoadDataFromScriptsCall(this, new File(script), locale);
+		LoadDataFromScriptsCall call = new LoadDataFromScriptsCall(this, new File(script), locale, variables);
 		pool.submit(call);
 	}
 	
-	public void script(String scriptContent, String locale) throws Exception {
+	public void script(String scriptContent, String locale, Map<String,String> variables) throws Exception {
 		ExecutorService pool = Executors.newSingleThreadExecutor();
-		LoadDataFromScriptsCall call = new LoadDataFromScriptsCall(this, scriptContent, locale);
+		LoadDataFromScriptsCall call = new LoadDataFromScriptsCall(this, scriptContent, locale, variables);
 		pool.submit(call);
 	}
 }

@@ -6,12 +6,7 @@ import java.util.Map;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 
-import edu.upc.dama.sparksee.commands.CloseDBCommand;
-import edu.upc.dama.sparksee.commands.Command;
-import edu.upc.dama.sparksee.commands.OpenDBCommand;
-import edu.upc.dama.sparksee.commands.ScriptCommand;
-import edu.upc.dama.sparksee.commands.ShutdownCommand;
-import edu.upc.dama.sparksee.commands.StartCommand;
+import edu.upc.dama.sparksee.commands.*;
 
 public class SparkseeServer {
 	@Parameter(names = "--help", help = true)
@@ -60,12 +55,14 @@ public class SparkseeServer {
 		CloseDBCommand close = new CloseDBCommand(jc);
 		ScriptCommand script = new ScriptCommand(jc);
 		ShutdownCommand shutdown = new ShutdownCommand(jc);
+		UseCommand use = new UseCommand(jc);
 		
 		commands.put(start.getName(), start);
 		commands.put(open.getName(), open);
 		commands.put(close.getName(), close);
 		commands.put(script.getName(), script);
 		commands.put(shutdown.getName(), shutdown);
+		commands.put(use.getName(),use);
 
 		jc.parse(args);
 		String command = jc.getParsedCommand();

@@ -1,20 +1,18 @@
 package edu.upc.dama.sparksee.commands;
 
+import com.beust.jcommander.DynamicParameter;
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
+import edu.upc.dama.sparksee.SparkseeServer;
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.beust.jcommander.DynamicParameter;
-import org.apache.commons.io.FileUtils;
-
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
-
-import edu.upc.dama.sparksee.SparkseeServer;
-
 @Parameters(commandDescription = "Sends the contents of a local script to Sparksee.")
-public class ScriptCommand implements Command {
+public class UseCommand implements Command {
 
 	@Parameter(names = "--help", help = true)
 	private boolean help;
@@ -27,16 +25,13 @@ public class ScriptCommand implements Command {
 	@Parameter(names = "-port", required = false, description = "port")
 	private int port = SparkseeServer.getInstance().getPort();
 
-	private String name = "run";
+	private String name = "use";
 
 	@Parameter(names = "-file", required = true,
-    description = "file with the script contents. Remove the \"create/use dbgraph\" line from your script")
+    description = "the database file to use")
 	private String file;
 
-	@DynamicParameter(names = "-var", description = "Dynamic configuration parameters go here")
-	private Map<String, String> variables = new HashMap<>();
-
-	public ScriptCommand(JCommander jc) {
+	public UseCommand(JCommander jc) {
 		jc.addCommand(name, this);
 		this.jc = jc;
 	}
@@ -52,15 +47,12 @@ public class ScriptCommand implements Command {
 			if (script.exists()) {
 				String contents = FileUtils.readFileToString(script);
 				HashMap<String, Object> bindings = new HashMap<String, Object>();
-				bindings.put("scriptContent", contents);
-				bindings.put("locale", ".utf8");
-				bindings.put("variables", variables);
+				bindings.put("file", file);
 
-				SparkseeClient.request(host, port, "g.script(scriptContent, locale, variables)", bindings);
+				SparkseeClient.request(host, port, "g.use(file)", bindings);
 			} else {
-				System.out.println("ERROR: The script does not exist");
+				System.out.println("ERROR: The file does not exist");
 			}
-
 		}
 
 	}
